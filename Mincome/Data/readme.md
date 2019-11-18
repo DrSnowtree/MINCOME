@@ -1,8 +1,8 @@
-Mincome is the data file created by merging baseline_payments data and family composition data  
+Mincome is the data file Alyssa had 
 
 mincome711 means that the data was created/modified on 7th of November
 
-mincome711 is the data we get after running the commands on set_up.do file 
+mincome711 is the data we get after running the commands on set_up.do file on the mincome.dta 
 
 baseline data is downloaded from the UManitoba directly, variable names fixed 
 
