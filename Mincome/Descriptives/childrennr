@@ -1,0 +1,149 @@
+I added a dummy in the baseline taking the value of 1 if the number of children has increased in a household
+
+The dummy is 0 if the increase has taken place in the first 9 months (this should still be adjusted by the date the family enrolled) 
+
+I then subset my sample to households in Winnipeg only and then merge it with the mincome711 data, which includes information on Winnipeg families 
+
+I do the merge and look at the differences between the two datasets 
+
+There are 74 increases if we look at the increase in the number of children, and 43 if we compute the number by looking at births and family relations
+7 are not observed in the first, 38 are common and 36 are not observed in the second dataset
+
+Reasons for differences are: 
+- family birthday information is missing in family structure data: 13 cases
+- joining person is another relative: once only!
+- once, grandchild -> also important if the head has adult children, who then have children themselves and stay in the household
+- the family structure data was not collected monthly but also 3/4 times, so if the child was born after the last survey, it is likely that they were not registered
+increases not registered as birth: in m36, 35, 32, 30, 21, 33, 39 
+-when the family size is very large, sometimes the info seems inconsistent, likely that a child moves out and then in 
+-six families that are counted in family data are not included in the first data because they dropped out within the first six months
+
+it seems that we might be missing quite a few births because a) birthday and relationship data is missing and b) the child is born after the last family structure survey took place 
+the danger with using the increase in children: a) we can count relatives like brothers, sisters, nephews, nieces but this only occurs 1 time in 74 in Winnipeg 
+b)in the very big families, it can be misleading, this is about 3-4 cases
+if we can assume that these happen randomly, then we can also use the increase in numbers 
+family size is not random though, it is a factor that determines assignment 
+still can be used 
+
+
+#family 1459, likely that there was a mistake at the interview
+#or one of the adult children moved back in after a couple of months 
+#the month where the nr of children increases is 26 
+
+#in 1568, it seems that there was indeed a new child, the number of children 
+#increases and stays the same until the end of sample, but the birthday 
+#information is somehow missing in the Winnipeg sample, that's why not counted
+#the month where the nr of children increases is 17
+
+#1703, last three months both the nr of children and fam size increases
+#in Winnipeg sample with fam info, there is only info for four people in total
+#the fifth person does not seem to exist 
+#the month where the nr of children increases is 35
+
+#family 2233 has one more child starting on month 36
+
+#family 3902 in month 32 
+
+#family 4097 in month 30 
+
+#family 4347 in month 23, but this is maybe indeed not a  birth 
+#family size changes a lot 
+#family composition data shows: there is info on 9 members in total 
+#two heads, five daughters and two sons 
+#in month 23 where a new child might have arrived, there were 7 people, 
+#two heads, three adults (children over 16) and two children, and then it was 
+#three children 
+#possible that in month 27, one child turns 16 and then towards the end, one moves out 
+
+
+#5274, entered in month 21, family size info and all rest seems consistent afterwards 
+#3 daughters and one son seen in Winnipeg sample 
+
+#5393 two adults one male and one female head, a child enters in month 11
+#who is missing from Winnipeg sample 
+
+#5708, month 13, from 3 to 4 children, information seems consistent 
+#there is one female head and thee daughters that can be seen in the fam structue
+#data, but the family was not included in the first four months so that is why 
+#it was eliminated
+#and idea could be to use the baseline data, and use the information of the month they started 
+#and eliminate observations accordingly 
+
+#fam 7343 had one child entering in month 21, and then another one in month 23
+#which already suggests that it is not a pregnancy, in family data we see that 
+#everyone is either male or female head or son/daughter and there is info for 
+#five people so that the other two are not at all registered there 
+
+#fam 7963, in family data we see one female head, a daughter and a son
+#and they all seem to be living since the same time no return, no reason 
+#month 16 
+
+#family of 7 with one female head and otherwise all children in fam data 
+#in basepay data at some point fam size decreases then increases again so
+#two children were probably out and then returned, this should be 
+#eliminated 
+
+#fam 9965 seems to have had a child in month 10 but they only started in month 4
+#so this can be eliminated too 
+
+#5 people in fam data, a female head, four kids, it seems like the kid comes back because
+#it is 4 and then 3 and then 4 again 
+
+#10737 there are seven people in total at the beginning and then they mabe move and then 
+#move back in, does not seem very reliable in any case, but also one male head and then 
+#all daughters and sons 
+
+#10923, month 11 although started in month 2
+
+#11047 month 33, four people in fam data, two kids and two parents so probably fifth 
+#person is a baby came after the last survey 
+
+#11073, actually no info on family structure 
+
+#12551, very big fam, information on 12 people in fam data 
+#all kids and parents except for one grand-daughter, which 
+#is evidence for fertility, just not of the head 
+
+#12774 month 23, no birth and relation info in fam data 
+
+#13306 likewise no info in fam data 
+
+#13382 also no info in fam data 
+
+#14324 month 21, this time indeed no child, brother 
+
+#14848 no info in fam data, month 29  
+
+#15951, no info in fam data 
+
+#16063, no info in family data 
+
+#in month 17, there is one child and no longer after 30, check this again 
+
+#16687 no info 
+
+
+#same prob as before, child 10 but participate in m 2 
+
+#17983 no info, two children in months 11 and 35  
+
+#18555, no info, but the numbers seem consistent 
+
+#18576 no info 
+
+#18614 no information 
+
+#now the ones in fam data but not in the panel data 
+
+#2534  the one increase is in month 4 
+
+#5395 seems to have dropped out within the first two years so they are not in basepay data 
+
+#likewise for 9051 
+#11028 not in basepay but don't know why 
+
+#15029 stopped answering 
+
+#15691 stopped answering after month 19 
+
+#17883 stopped answering after month 20 
