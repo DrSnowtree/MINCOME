@@ -1,3 +1,26 @@
+install.packages("compareGroups")
+install.packages("data.table")
+install.packages("gtools")
+install.packages("haven")
+install.packages("dplyr")
+install.packages("tidyr") 
+install.packages("tidyverse")
+install.packages("lubridate") 
+install.packages("data.table")
+install.packages("foreign")
+install.packages("quantmod") 
+install.packages("zoo")
+install.packages("plm")
+install.packages("gplots")
+install.packages("stargazer")
+install.packages("lfe")
+install.packages("Hmisc")
+install.packages("readxl")
+install.packages("naniar")
+install.packages("strex")
+install.packages(devtools)
+install.packages("tideyselect")
+
 library("compareGroups")
 library("data.table")
 library("gtools")
@@ -8,6 +31,7 @@ library("tidyverse")
 library("lubridate") 
 library("data.table")
 library("foreign")
+library("haven")
 library("quantmod") 
 library("zoo")
 library("plm")
@@ -19,6 +43,7 @@ library("readxl")
 library("naniar")
 library("strex")
 library(devtools)
+
 
 #Data Preparation
 
@@ -202,3 +227,27 @@ basepaycross_rem$individual <- as.factor(basepaycross_rem$individual)
 
 basepaypanel_winni <- basepaypanel[which(basepaypanel$SITECODE == 1),]
 saveRDS(basepaypanel_winni, "basepaypanel_winni.rds")
+
+#family data to calculate the age where women have kids 
+
+famdata_ind <- read_dta("W:/WU/Projekte/mincome/Mincome/Data/famdata_ind.dta")
+famdata_ind[famdata_ind == -4] <- NA
+famdata_ind <- famdata_ind[, c(1:6)]
+famdata_ind <- famdata_ind[!(is.na(famdata_ind$OID)), ]
+famdata_ind <- famdata_ind[famdata_ind$RTH == 2 | famdata_ind$RTH == 4 | famdata_ind$RTH == 5, ]
+
+famdata_ind$BIRTH <- as.character(famdata_ind$BIRTH)
+famdata_ind$birthyear <- substr(famdata_ind$BIRTH, 1, 2)
+famdata_ind$birthday <- substr(famdata_ind$BIRTH, 3, 6)
+
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_firstch = birthyear - dplyr::lag(birthyear, 1))  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+
+
+
