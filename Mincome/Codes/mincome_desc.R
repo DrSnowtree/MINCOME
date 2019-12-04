@@ -1,3 +1,5 @@
+getwd()
+
 install.packages("compareGroups")
 install.packages("data.table")
 install.packages("gtools")
@@ -19,7 +21,7 @@ install.packages("readxl")
 install.packages("naniar")
 install.packages("strex")
 install.packages(devtools)
-install.packages("tideyselect")
+install.packages("tidyselect")
 
 library("compareGroups")
 library("data.table")
@@ -240,14 +242,83 @@ famdata_ind$BIRTH <- as.character(famdata_ind$BIRTH)
 famdata_ind$birthyear <- substr(famdata_ind$BIRTH, 1, 2)
 famdata_ind$birthday <- substr(famdata_ind$BIRTH, 3, 6)
 
+famdata_ind$birthyear <- as.numeric(famdata_ind$birthyear)
 
 famdata_ind <- famdata_ind%>%
   group_by(FAMNUM) %>%
   arrange(desc(BIRTH))  %>%
-  mutate(age_firstch = birthyear - dplyr::lag(birthyear, 1))  %>%
+  mutate(age_firstch = dplyr::lag(birthyear, 1) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_firstch = dplyr::lag(birthyear, 1) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_secch = dplyr::lag(birthyear, 2) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_thirdch = dplyr::lag(birthyear, 3) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_fourthch = dplyr::lag(birthyear, 4) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_fifthch = dplyr::lag(birthyear, 5) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_sixthch = dplyr::lag(birthyear, 6) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_seventhch = dplyr::lag(birthyear, 7) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
+
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_eigthch = dplyr::lag(birthyear, 8) - birthyear)  %>%
   ungroup()%>%
   arrange(FAMNUM, BIRTH)
 
 
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_ninthch = dplyr::lag(birthyear, 9) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
 
+famdata_ind <- famdata_ind%>%
+  group_by(FAMNUM) %>%
+  arrange(desc(BIRTH))  %>%
+  mutate(age_tenthch = dplyr::lag(birthyear, 10) - birthyear)  %>%
+  ungroup()%>%
+  arrange(FAMNUM, BIRTH)
 
+famdata_ind <- famdata_ind[famdata_ind$RTH == 2, ]
+
+saveRDS(famdata_ind, file = "famdata_ind.rds")
