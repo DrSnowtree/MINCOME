@@ -329,11 +329,17 @@ basepaypanel_winni_year <- basepaypanel_winni %>%
   select(FAMNUM, if_birth, year, control, plan) %>%
   summarise(if_birth=mean(if_birth), control = mean(control), plan =mean(plan))
 
+class(basepaypanel_winni_year$FAMNUM)
+famdata_ind$FAMNUM <- as.factor(as.character(famdata_ind$FAMNUM))
+
+famdata_ind$year = famdata_ind$birthyear + famdata_ind$age
 famdata_ind <- merge(basepaypanel_winni_year, famdata_ind, by =c("FAMNUM", "year"), all=T)
 famdata_ind$year = famdata_ind$birthyear + famdata_ind$age
+
 famdata_ind$event[famdata_ind$if_birth == 1] <- 1
 famdata_ind <- famdata_ind%>%
   arrange(OID, age) 
+
 #for all women who reach the age 50 by the end of experiment, we have the full birth history
 #for women who are under 50 by the end of experiment, the years after the experiment are censored 
 
@@ -341,15 +347,21 @@ famdata_ind$censored <-0
 famdata_ind$censored[famdata_ind$year > 1977] <- 1
 length(which(famdata_ind$event == 1))
 
+
 #have the control variable be 1 or 0 for all years 
-famdata_ind$OID <- as.factor(as.character(famdata_ind$OID))
-for (i in levels(famdata_ind$OID)){
-  s <- sum(famdata_ind[famdata_ind$OID == i, "control"])
+famdata_ind$OID <- as.factor(famdata_ind$OID)
+famdata_ind$control <- as.numeric(famdata_ind$control)
+
+for (i in levels(famdata_ind$FAMNUM)){
+  s <- sum(famdata_ind[famdata_ind$FAMNUM == i, "control"], na.rm=TRUE)
   famdata_ind$sumcontrol[famdata_ind$FAMNUM == i] <- s
 }
 
-famdata_ind$control1 = 0   
-famdata_ind$control1[basepaypanel_winni$sumcontrol != 0] <- 1
+famdata_ind$treated = 0   
+famdata_ind$treated[famdata_ind$sumcontrol != 0] <- 1
+
+saveRDS(famdata_ind, "famdata_ind.rds")
+
 
 length(which(famdata_ind$event == 1 & famdata_ind$age == 15))
 length(which(famdata_ind$event == 1 & famdata_ind$age == 16))
