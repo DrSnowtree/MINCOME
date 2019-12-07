@@ -360,7 +360,22 @@ for (i in levels(famdata_ind$FAMNUM)){
 famdata_ind$treated = 0   
 famdata_ind$treated[famdata_ind$sumcontrol != 0] <- 1
 
+#now we want treated to be 1 only during the experiment, so we create an experiment dummy that takes the value of 1 
+#during 1975, 1976, 1977, which we then interact with treated 
+famdata_ind$experiment = 0 
+famdata_ind$experiment[famdata_ind$year == 1975 | famdata_ind$year == 1976 | famdata_ind$year == 1977] = 1 
+famdata_ind$treated_exp = famdata_ind$experiment*famdata_ind$treated
+
 saveRDS(famdata_ind, "famdata_ind.rds")
+
+#remove censored observations 
+
+famdata_ind_nocens <- famdata_ind[famdata_ind$censored == 0, ]
+
+#add intervals now 
+famdata_ind$int1 = famdata_ind$age_firstch - 15 
+
+
 
 
 length(which(famdata_ind$event == 1 & famdata_ind$age == 15))
