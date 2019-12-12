@@ -24,6 +24,9 @@ install.packages(devtools)
 install.packages("tidyselect")
 install.packages("backports")
 install.packages("survival")
+install.packages("pltesim")
+install.packages("informR")
+install.packages("frailtypack")
 
 library("compareGroups")
 library("data.table")
@@ -48,6 +51,9 @@ library("naniar")
 library("strex")
 library(devtools)
 library(survival)
+library(pltesim)
+library(informR)
+library(frailtypack)
 
 #Data Preparation
 
@@ -376,42 +382,116 @@ famdata_ind_nocens <- famdata_ind[famdata_ind$censored == 0, ]
 famdata_ind$int1 = famdata_ind$age_firstch - 15 
 
 
+famdata_ind_nocens <- fastDummies::dummy_columns(famdata_ind_nocens, select_columns = "age")
 
 
-length(which(famdata_ind$event == 1 & famdata_ind$age == 15))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 16))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 17))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 18))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 19))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 20))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 21))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 22))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 23))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 24))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 25))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 26))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 27))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 28))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 29))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 30))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 31))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 32))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 33))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 34))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 35))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 36))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 37))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 38))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 39))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 40))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 41))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 42))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 43))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 44))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 45))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 46))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 47))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 48))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 49))
-length(which(famdata_ind$event == 1 & famdata_ind$age == 50))
+famdata_ind_nocens$age1519 <- 0
+famdata_ind_nocens$age1519[famdata_ind_nocens$age == 15 | famdata_ind_nocens$age == 16 | famdata_ind_nocens$age == 17 |
+                             famdata_ind_nocens$age == 18 | famdata_ind_nocens$age == 19  ] <- 1
 
+
+famdata_ind_nocens$age2024 <- 0 
+famdata_ind_nocens$age1519[famdata_ind_nocens$age == 20 | famdata_ind_nocens$age == 21 | famdata_ind_nocens$age == 22 |
+                             famdata_ind_nocens$age == 23 | famdata_ind_nocens$age == 24  ] <- 1
+
+
+famdata_ind_nocens$age2429 <- 0 
+famdata_ind_nocens$age2429[famdata_ind_nocens$age == 24 | famdata_ind_nocens$age == 25 | famdata_ind_nocens$age == 26 |
+                             famdata_ind_nocens$age == 27 | famdata_ind_nocens$age == 28  ] <- 1
+
+famdata_ind_nocens$age3034 <- 0 
+famdata_ind_nocens$age3034[famdata_ind_nocens$age == 30 | famdata_ind_nocens$age == 31 | famdata_ind_nocens$age == 32 |
+                             famdata_ind_nocens$age == 33 | famdata_ind_nocens$age == 34  ] <- 1
+
+
+
+famdata_ind_nocens$age3539 <- 0
+famdata_ind_nocens$age3539[famdata_ind_nocens$age == 35 | famdata_ind_nocens$age == 36 | famdata_ind_nocens$age == 37 |
+                             famdata_ind_nocens$age == 38 | famdata_ind_nocens$age == 39  ] <- 1
+
+famdata_ind_nocens$age4044 <- 0 
+famdata_ind_nocens$age4044[famdata_ind_nocens$age == 40 | famdata_ind_nocens$age == 41 | famdata_ind_nocens$age == 42 |
+                             famdata_ind_nocens$age == 43 | famdata_ind_nocens$age == 44  ] <- 1 
+
+
+famdata_ind_nocens$age4550 <- 0 
+famdata_ind_nocens$age4550[famdata_ind_nocens$age == 45 | famdata_ind_nocens$age == 46 | famdata_ind_nocens$age == 47 |
+                             famdata_ind_nocens$age == 48 | famdata_ind_nocens$age == 49  ] <- 1 
+
+#j is the birth interval, or the spell/episode 
+
+famdata_ind_nocens <- btscs(df=famdata_ind_nocens, event="event", t_var="age", cs_unit="OID", pad_ts = FALSE)
+famdata_ind_nocens$birthid <- NA 
+famdata_ind_nocens$birthid <- ifelse(famdata_ind_nocens$event == 1, paste(famdata_ind_nocens$OID, famdata_ind_nocens$age, sep=""), NA)
+
+famdata_ind_nocens$birthid <- as.factor(famdata_ind_nocens$birthid)
+
+births <- famdata_ind_nocens[which(famdata_ind_nocens$event == 1),]
+
+births <- births %>%
+  group_by(OID) %>%
+  select(OID, age, j)  %>%
+  arrange(age)  %>%
+  mutate(j = row_number() + 1)  %>%
+  ungroup()%>%
+  arrange(OID, age) 
+
+famdata_ind_nocens <- try
+
+famdata_ind_nocens <- merge(famdata_ind_nocens, births, by = c("OID", "age"), all=TRUE)
+
+spell = NA
+woman = famdata_ind_nocens$OID[1]
+for (i in 1:dim(famdata_ind_nocens)[1]){
+  if (!is.na(famdata_ind_nocens$birthid[i])){
+    spell = famdata_ind_nocens$j[i]
+    woman = famdata_ind_nocens$OID[i]
+  }
+  else if (is.na(famdata_ind_nocens$birthid[i]) && famdata_ind_nocens$OID[i] == woman){
+    famdata_ind_nocens$j[i] = spell
+  }
+}
+
+famdata_ind_nocens$j[is.na(famdata_ind_nocens$j)] <- 1
+
+
+data <- famdata_ind_nocens 
+data <- data[, c(1, 3, 2, 4, 86, 84, 24, 27, 28, 5:23, 25, 26, 29:83, 85)]
+data_personperiod <- data
+saveRDS(data_personperiod, "data_personperiod.rds")
+
+#structure for Andersen-Gill or PWP models 
+
+data$a <- 0
+
+data$a[data$age == 15 | data$age == 50] <- 1
+
+
+data <- data %>%
+  group_by(OID) %>%
+  arrange(age)  %>%
+  mutate(prevj = dplyr::lag(j, 1))  %>%
+  ungroup()%>%
+  arrange(OID, age)
+
+data$a[data$prevj != data$j] <- 1
+
+dataag <- data[which(data$a == 1), ]
+dataag$start <- dataag$age
+
+dataag <- dataag %>%
+  group_by(OID) %>%
+  arrange(desc(age))  %>%
+  mutate(finish = dplyr::lag(start, 1))  %>%
+  ungroup()%>%
+  arrange(OID, age)
+
+dataag <- dataag[-which(dataag$start == 50 & (is.na(dataag$finish))), ]
+
+dataag$endage <-1977 - dataag$birthyear
+
+dataag$finish[is.na(dataag$finish)] = dataag$endage[is.na(dataag$finish)]
+
+dataag <- dataag[, c(1, 2, 89, 90, 3:88)]
+
+saveRDS(dataag, "dataag.rds")
