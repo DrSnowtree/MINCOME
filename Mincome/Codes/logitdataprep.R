@@ -21,9 +21,13 @@ library(survival)
 library(pltesim)
 library(informR)
 library(frailtypack)
+library(compareGroups)
+install.packages("base64enc")
+install.packages("xml2")
+install.packages("SparseM")
+install.packages("quantreg")
 
-
-basepaypanel <- read_dta("Downloads/basepaypanel_revised.dta")
+basepaypanel <- read_dta("basepaypanel_revised.dta")
 basepaypanel[basepaypanel == -9] <- NA
 basepaypanel[basepaypanel == -7] <- NA
 basepaypanel[basepaypanel == -1] <- NA
@@ -66,7 +70,8 @@ basepaypanel <- basepaypanel %>%
   arrange(FamNum, month)
 
 #exclude those that experienced birth within the first nine months of the experiement 
-basepaypanel$increase[basepaypanel$month1 < 9] <- 0
+basepaypanel$firstnine <- 0
+basepaypanel$firstnine[basepaypanel$month1 < 9] <- 1
 
 #CR and CS give the male and female householders´ age, also for households that were missing 
 #at the beginning of the experiment 
@@ -94,6 +99,19 @@ for (i in levels(basepaypanel$FamNum)){
 
 basepaypanel$if_increase = 0   
 basepaypanel$if_increase[basepaypanel$sum != 0] <- 1
+
+#another dummy if the increase has been during the first nine months
+basepaypanel$increase9 = basepaypanel$increase*basepaypanel$firstnine
+basepaypanel$top = 0
+basepaypanel$FamNum <- as.factor(basepaypanel$FamNum)
+for (i in levels(basepaypanel$FamNum)){
+  s <- sum(basepaypanel[basepaypanel$FamNum == i, "increase9"])
+  basepaypanel$top[basepaypanel$FamNum == i] <- s
+}
+
+basepaypanel$if_increase9 = 0   
+basepaypanel$if_increase9[basepaypanel$top != 0] <- 1
+
 
 #Plan 6 was merged with plan 7 at some point
 basepaypanel$plan[basepaypanel$plan == 6] <- 7
@@ -147,6 +165,7 @@ basepaypanel_rem <- basepaypanel_rem[which(basepaypanel_rem$if_change == 0),]
 basepaypanel_rem$plan <- as.numeric(as.character(basepaypanel_rem$plan))
 basepaypanel_rem$control <- as.numeric(as.character(basepaypanel_rem$control))
 basepaypanel_rem$if_increase <- as.numeric(as.character(basepaypanel_rem$if_increase))
+basepaypanel_rem$if_increase9 <- as.numeric(as.character(basepaypanel_rem$if_increase9))
 basepaypanel_rem$MAGE <- as.numeric(as.character(basepaypanel_rem$MAGE))
 basepaypanel_rem$FAGE <- as.numeric(as.character(basepaypanel_rem$FAGE))
 basepaypanel_rem$DoubleHead1 <- as.numeric(as.character(basepaypanel_rem$DoubleHead1))
@@ -158,7 +177,7 @@ basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
 
 basepay <- basepaypanel_rem %>%
   group_by(FamNum)%>%
-  summarise(if_birth=mean(if_increase), control = mean(control), plan =mean(plan), 
+  summarise(if_birth=mean(if_increase), if_birth9=mean(if_increase9), control = mean(control), plan =mean(plan), 
             MAGE = mean(MAGE), FAGE = mean(FAGE), DH = mean(DoubleHead1), individual = mean(individual), 
             SH =mean(SingleHead1), AC = mean(asscell)) %>% 
   ungroup()
@@ -237,7 +256,7 @@ basepay$guarantee[basepay$plan == 1 |basepay$plan == 3 ] <- 3800
 basepay$guarantee[basepay$plan == 2 |basepay$plan == 4 | basepay$plan == 7] <- 4800
 basepay$guarantee[basepay$plan == 5 |basepay$plan == 8 ] <- 5480
 
-familydata <- read_excel("Downloads/familydata.xlsx")
+familydata <- read_excel("familydata.xlsx")
 
 familydata <- familydata %>%
   dplyr::select("FamNum", "chout")
@@ -272,3 +291,5 @@ basepay$chout[is.na(basepay$chout)] <- 0
 basepay$AC <- as.character(basepay$AC)
 basepay$incbracket <- substr(basepay$AC, 2, 3)
 basepay$incbracket <- as.factor(basepay$incbracket)
+
+saveRDS(basepay, "basepay.rds")
