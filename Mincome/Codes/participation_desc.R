@@ -127,4 +127,4 @@ compare = compareGroups::compareGroups(part ~ AGEF + AGEM + NUMADULTS
                                               max.ylev = 10 )
 export2latex(createTable(compare))  
 
-
+ 

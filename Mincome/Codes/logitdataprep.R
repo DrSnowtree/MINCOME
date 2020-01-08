@@ -22,10 +22,8 @@ library(pltesim)
 library(informR)
 library(frailtypack)
 library(compareGroups)
-install.packages("base64enc")
-install.packages("xml2")
-install.packages("SparseM")
-install.packages("quantreg")
+library("xtable")
+
 
 basepaypanel <- read_dta("basepaypanel_revised.dta")
 basepaypanel[basepaypanel == -9] <- NA
@@ -191,7 +189,7 @@ bpinfo <- basepaypanel_rem %>%
   ungroup()
 
 bpinfo <- bpinfo %>%
-  dplyr::select(FamSize, FamSizex100, FamNum)
+  dplyr::select(FamSize, FamSizex100, FamNum, NumAdults, NumChild)
 
 basepay <- merge(basepay, bpinfo, by = "FamNum", all = TRUE)
 basepay$treated <- 0 
@@ -240,9 +238,9 @@ basepay$age4550[basepay$age == 45 | basepay$age == 46 | basepay$age == 47 |
 
 basepay$age50plus <- 0 
 basepay$age50plus[basepay$age > 50 ] <- 1 
-names(basepay)[names(basepay) == 'Fam Size (x100)'] <- "FSI"
-names(basepay)[names(basepay) == 'Num Child'] <- "chnr"
-names(basepay)[names(basepay) == 'Tot Fam Inc 74'] <- "TotInc74"
+names(basepay)[names(basepay) == 'FamSizex100'] <- "FSI"
+names(basepay)[names(basepay) == 'TotFamInc74'] <- "TotInc74"
+
 basepay$TotInc74 <- as.numeric(basepay$TotInc74)
 basepay$age <- as.factor(basepay$age)
 basepay$rate <- 0
@@ -293,3 +291,33 @@ basepay$incbracket <- substr(basepay$AC, 2, 3)
 basepay$incbracket <- as.factor(basepay$incbracket)
 
 saveRDS(basepay, "basepay.rds")
+
+length(which(basepay$plan == 1))
+length(which(basepay$plan == 2))
+length(which(basepay$plan == 3))
+length(which(basepay$plan == 4))
+length(which(basepay$plan == 5))
+length(which(basepay$plan == 7))
+length(which(basepay$plan == 8))
+length(which(basepay$plan == 9))
+
+nrplans <- matrix(c(41,57,42,59,48,52,40,101),ncol=8,byrow=TRUE)
+colnames(nrplans) <- c("Plan 1","Plan 2","Plan 3", "Plan 4","Plan 5","Plan 7", "Plan 8","Control")
+rownames(nrplans) <- c("Number of households")
+print(xtable(nrplans, type = "latex"), file = "nrplans.tex")
+
+
+base_payrev <- read_excel("W:/WU/Projekte/mincome/Mincome/Data/base_pay.data_revised_Dec 11, 2019.xlsx")
+base_payrev[base_payrev == -9] <- NA
+base_payrev[base_payrev == -7] <- NA
+base_payrev[base_payrev == -1] <- NA
+base_payrev[base_payrev == "."] <- NA
+
+base_payrev <- base_payrev  %>%
+dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
+
+basepay <- merge(base_payrev, basepay, by = "FAMNUM")
+basepay$highschf <- as.factor(basepay$highschf)
+basepay$highschm <- as.factor(basepay$highschm)
+basepay$yrschm <- as.numeric(basepay$yrschm)
+basepay$yrschf <- as.numeric(basepay$yrschf)
