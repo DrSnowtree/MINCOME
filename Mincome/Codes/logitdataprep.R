@@ -33,6 +33,8 @@ basepaypanel[basepaypanel == "."] <- NA
 basepaypanel$individual <- 0 
 basepaypanel$individual[basepaypanel$DoubleHead1== 0 & basepaypanel$SingleHead1 == 0] <- 1
 
+
+
 #only have Winnipeg 
 
 basepaypanel <- basepaypanel[which(basepaypanel$SiteCode == 1),]
@@ -76,7 +78,6 @@ basepaypanel$firstnine[basepaypanel$month1 < 9] <- 1
 
 basepaypanel$mage<- basepaypanel$CR
 basepaypanel$fage<- basepaypanel$CS
-
 faminfo <- subset(basepaypanel, select=c("FamNum","FSI", "FS", "month1", "mage", "fage", "AC"))
 faminfo <- faminfo[which(faminfo$month1 ==1),]
 faminfo <- faminfo %>% rename(FAMSI=FSI)
@@ -170,12 +171,11 @@ basepaypanel_rem$DoubleHead1 <- as.numeric(as.character(basepaypanel_rem$DoubleH
 basepaypanel_rem$individual <- as.numeric(as.character(basepaypanel_rem$individual))
 basepaypanel_rem$SingleHead1 <- as.numeric(as.character(basepaypanel_rem$SingleHead1))
 basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
-basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
-
 
 basepay <- basepaypanel_rem %>%
   group_by(FamNum)%>%
-  summarise(if_birth=mean(if_increase), if_birth9=mean(if_increase9), control = mean(control), plan =mean(plan), 
+  summarise(if_birth=mean(if_increase), 
+            if_birth9=mean(if_increase9), control = mean(control), plan =mean(plan), 
             MAGE = mean(MAGE), FAGE = mean(FAGE), DH = mean(DoubleHead1), individual = mean(individual), 
             SH =mean(SingleHead1), AC = mean(asscell)) %>% 
   ungroup()
@@ -291,31 +291,16 @@ basepay$incbracket <- substr(basepay$AC, 2, 3)
 basepay$incbracket <- as.factor(basepay$incbracket)
 
 
-length(which(basepay$plan == 1))
-length(which(basepay$plan == 2))
-length(which(basepay$plan == 3))
-length(which(basepay$plan == 4))
-length(which(basepay$plan == 5))
-length(which(basepay$plan == 7))
-length(which(basepay$plan == 8))
-length(which(basepay$plan == 9))
+basepay_rev <- read_excel("base_pay.data_revised_Dec 11, 2019.xlsx")
+basepay_rev[basepay_rev == -9] <- NA
+basepay_rev[basepay_rev == -7] <- NA
+basepay_rev[basepay_rev == -1] <- NA
+basepay_rev[basepay_rev == "."] <- NA
 
-nrplans <- matrix(c(41,57,42,59,48,52,40,101),ncol=8,byrow=TRUE)
-colnames(nrplans) <- c("Plan 1","Plan 2","Plan 3", "Plan 4","Plan 5","Plan 7", "Plan 8","Control")
-rownames(nrplans) <- c("Number of households")
-print(xtable(nrplans, type = "latex"), file = "nrplans.tex")
-
-
-base_payrev <- read_excel("W:/WU/Projekte/mincome/Mincome/Data/base_pay.data_revised_Dec 11, 2019.xlsx")
-base_payrev[base_payrev == -9] <- NA
-base_payrev[base_payrev == -7] <- NA
-base_payrev[base_payrev == -1] <- NA
-base_payrev[base_payrev == "."] <- NA
-
-base_payrev <- base_payrev  %>%
+basepay_rev <- basepay_rev  %>%
 dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
 basepay$FAMNUM <- basepay$FamNum
-basepay <- merge(base_payrev, basepay, by = "FAMNUM")
+basepay <- merge(basepay_rev, basepay, by = "FAMNUM")
 basepay$highschf <- as.factor(basepay$highschf)
 basepay$highschm <- as.factor(basepay$highschm)
 basepay$yrschm <- as.numeric(basepay$yrschm)
@@ -326,4 +311,16 @@ basepay$malepr[!is.na(basepay$MAGE)] <- 1
 basepay$malepr <- as.factor(basepay$malepr)
 basepay <- basepay[-which(is.na(basepay$age)), ]
 
+basepay$birth <- 1 
+basepay$birth[basepay$if_birth == 0] <- 0 
+basepay$birth[basepay$if_birth9 == 1] <- 0
+
+basepay$birth  <- as.numeric(as.character(basepay$birth ))
+
+
 saveRDS(basepay, "basepay.rds")
+
+
+
+check <- subset(basepay, select=c("FamNum","malepr", "DH"))
+check
