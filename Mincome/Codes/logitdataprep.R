@@ -290,7 +290,6 @@ basepay$AC <- as.character(basepay$AC)
 basepay$incbracket <- substr(basepay$AC, 2, 3)
 basepay$incbracket <- as.factor(basepay$incbracket)
 
-saveRDS(basepay, "basepay.rds")
 
 length(which(basepay$plan == 1))
 length(which(basepay$plan == 2))
@@ -315,9 +314,16 @@ base_payrev[base_payrev == "."] <- NA
 
 base_payrev <- base_payrev  %>%
 dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
-
+basepay$FAMNUM <- basepay$FamNum
 basepay <- merge(base_payrev, basepay, by = "FAMNUM")
 basepay$highschf <- as.factor(basepay$highschf)
 basepay$highschm <- as.factor(basepay$highschm)
 basepay$yrschm <- as.numeric(basepay$yrschm)
 basepay$yrschf <- as.numeric(basepay$yrschf)
+
+basepay$malepr <- 0
+basepay$malepr[!is.na(basepay$MAGE)] <- 1
+basepay$malepr <- as.factor(basepay$malepr)
+basepay <- basepay[-which(is.na(basepay$age)), ]
+
+saveRDS(basepay, "basepay.rds")
