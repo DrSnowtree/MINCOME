@@ -1,234 +1,110 @@
-basepay$incbracket <-  as.factor(basepay$incbracket) 
-basepay$guarantee <-  as.factor(basepay$guarantee) 
-basepay$rate <-  as.factor(basepay$rate) 
-basepay$birth[basepay$if_birth9 == 1] <- 0
 
 
+#baseline, treatment variables and stratifying variables only 
 
-#baseline without education 
-reg1 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
-               chout + if_birth9, family = binomial(link = "logit"), data = basepay)
+reg1 <- glm(formula = birth ~ treated + DH + FSI + incbracket 
+            , family = binomial(link = "logit"), data = basepay)
 summary(reg1)
 
 reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550  +
-               FSI + NumChild  + incbracket +
-               chout + if_birth9, family = binomial(link = "logit"), data = basepay)
+              plan_5 + plan_7 + plan_8 + 
+              FSI + incbracket, family = binomial(link = "logit"), data = basepay)
 summary(reg2)
 
-stargazer(reg1, reg2)
+# with all controls except changes in composition of the household 
 
-#controlling for the educational level of the female householder 
 
 reg3 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
-               yrschf + 
-               chout + if_birth9, family = binomial(link = "logit"), data = basepay)
+               age3034 + age3539 + age4044 + age4550 + FSI   + incbracket  +
+               chout + if_birth9, 
+             family = binomial(link = "logit"), data = basepay)
 summary(reg3)
 
 reg4 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
                plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550  +
-               FSI + NumChild  + incbracket +  yrschf + 
+               FSI   + incbracket +
                chout + if_birth9, family = binomial(link = "logit"), data = basepay)
 summary(reg4)
-stargazer(reg3, reg4)
 
-#controlling for the educational level both householders
+#also including changes in the composition of the household
 
 reg5 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
-               yrschf + yrschm + 
-               chout + if_birth9, family = binomial(link = "logit"), data = basepay)
-
+              age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
+              chout + if_birth9 + changeDHSH + changeSHDH + NumAdults, 
+            family = binomial(link = "logit"), data = basepay)
+summary(reg5)
 
 reg6 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+              plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550  +
+              FSI + NumChild  + incbracket +
+              chout + if_birth9 + changeDHSH + changeSHDH + NumAdults, family = binomial(link = "logit"), data = basepay)
+summary(reg6)
+
+
+#controlling for the educational level of the female householder 
+
+reg7 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
+               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
+               yrschf +
+               chout + if_birth9, family = binomial(link = "logit"), data = basepay)
+summary(reg7)
+
+reg8 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
                plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550  +
-               FSI + NumChild  + incbracket +  yrschf + yrschm + 
+               FSI + NumChild  + incbracket +  yrschf +
                chout + if_birth9, family = binomial(link = "logit"), data = basepay)
-
-stargazer(reg5, reg6)
-
-#robustness 
-
-
-reg7 <- glm(formula = birth ~ treated, family = binomial(link = "logit"), data = basepay)
-
-summary(reg7)
-#not significant
-
-reg8 <- glm(formula = birth ~ treated + DH, family = binomial(link = "logit"), data = basepay)
-
 summary(reg8)
-#not significant
 
-reg9 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
-              age3034 + age3539 + age4044 + age4550, family = binomial(link = "logit"), data = basepay)
+# add changes in the household composition and number of adults 
+reg9 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
+              yrschf +
+              chout + if_birth9
+            + changeDHSH + changeSHDH + NumAdults, family = binomial(link = "logit"), data = basepay)
+summary(reg9)
 
-summary(reg9) 
-#not significant
+reg10 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+              plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550  +
+              FSI + NumChild  + incbracket +  yrschf +
+              chout + if_birth9 + changeDHSH + changeSHDH + NumAdults , family = binomial(link = "logit"), data = basepay)
+summary(reg10)
 
-reg10 <- glm(formula = birth ~ treated + FSI, family = binomial(link = "logit"), data = basepay)
 
-summary(reg10) 
-#significant
+reg11 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
+               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
+               yrschf + yrschm + changeDHSH + changeSHDH + MAGE+
+               chout + if_birth9 + NumAdults, family = binomial(link = "logit"), data = basepay)
+summary(reg11)
 
-reg11 <- glm(formula = birth ~ treated + incbracket, family = binomial(link = "logit"), data = basepay)
-
-summary(reg11) 
-#significant
-
-regstrtr <- glm(formula = birth ~ treated
-                + incbracket + FSI
-                , family = binomial(link = "logit"), data = basepay)
-summary(regstrtr)
-#only with stratify
-
-reg12 <- glm(formula = birth ~ treated + NumChild, family = binomial(link = "logit"), data = basepay)
-
-summary(reg12) 
-#significant
-
-reg13 <- glm(formula = birth ~ treated + chout, family = binomial(link = "logit"), data = basepay)
-
-summary(reg13) 
-#not significant, although this is normal, chout does not mean much by itself
-
-reg14 <- glm(formula = birth ~ treated + chout + NumChild, family = binomial(link = "logit"), data = basepay)
-
-summary(reg14)
-#significant
-reg15 <- glm(formula = birth ~ treated + chout + NumChild + if_birth9, family = binomial(link = "logit"), data = basepay)
-
-summary(reg15)
-#significant, the effect increases 
-basepay$age <- as.factor(basepay$age)
-reg16 <- glm(formula = birth ~ treated + chout + NumChild +
-             age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550, 
+reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+               plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
+               age3034 + age3539 + age4044 + age4550  +
+               FSI + NumChild  + incbracket +  yrschf + yrschm + MAGE +
+               chout + if_birth9 + changeDHSH + changeSHDH + NumAdults, 
              family = binomial(link = "logit"), data = basepay)
+summary(reg12)
 
-summary(reg16)
-#not significant 
-reg17 <- glm(formula = birth ~ treated + chout + NumChild +
-               age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550
-             + FSI + incbracket, 
-             family = binomial(link = "logit"), data = basepay)
+stargazer(reg1, reg2, reg3, reg4, reg5, reg6)
+stargazer(reg7, reg8, reg9, reg10, reg11, reg12)
 
-summary(reg17)
-#not significant
-reg18 <- glm(formula = birth ~ treated + chout + NumChild +
-               age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550
-             + FSI + incbracket + DH, 
-             family = binomial(link = "logit"), data = basepay)
-
-summary(reg18)
-#significant 
+#see if probability of becoming a DH changes with being treated or not 
 
 
-reg19 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-              plan_5 + plan_7 + plan_8, family = binomial(link = "logit"), data = basepay)
-summary(reg19)
-#plan 1 at 90% level. plan 7 at 95% level 
+cor(basepay$treated, basepay$changeSHDH, method = c("pearson", "kendall", "spearman"))
+cor.test(basepay$treated, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
 
-reg20 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + DH, family = binomial(link = "logit"), data = basepay)
-summary(reg20)
-
-reg20 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + DH, family = binomial(link = "logit"), data = basepay)
-summary(reg20)
-
-#plan 7 significant 
-reg21 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550, family = binomial(link = "logit"), data = basepay)
-summary(reg21)
-#plan 7 significant 
-
-reg22 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + FSI, family = binomial(link = "logit"), data = basepay)
-summary(reg22)
-#plans 1, 5 and 7 significant at 90%, plan 3 at 95%
-
-
-reg23 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + incbracket, family = binomial(link = "logit"), data = basepay)
-summary(reg23)
-
-#plans 1 at 95%, 7 at 90% 
-
-regstr <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + incbracket + FSI
-             , family = binomial(link = "logit"), data = basepay)
-summary(regstr)
-#only with stratifying variables: plans 1 and 3 significant at 95%, 5 and 7 at 90%
+cor.test(basepay$plan_1, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_2, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_3, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_4, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_5, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_7, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
+cor.test(basepay$plan_8, basepay$changeSHDH, method=c("pearson", "kendall", "spearman"))
 
 
 
-
-reg24 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + NumChild, family = binomial(link = "logit"), data = basepay)
-summary(reg24)
-
-#plans 1 and 3 at 90%, 7 at 95%
-
-reg25 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout, family = binomial(link = "logit"), data = basepay)
-summary(reg25)
-#plans 1 at 90%, plan 7 at 95% 
-
-reg26 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout + NumChild, family = binomial(link = "logit"), data = basepay)
-summary(reg26)
-#plan 3 at 90% and 7 significant at 95% 
-
-reg27 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout + NumChild + if_birth9, family = binomial(link = "logit"), data = basepay)
-summary(reg27)
-#plan 3 at 90% and 7 significant at 95% 
-reg28 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + DH + NumChild + if_birth9
-            , family = binomial(link = "logit"), data = basepay)
-summary(reg28)
-#plan 7 significant at 95%, plan 1 90%, plan 7 90% if we havea DH instead of DH 
-
-reg29 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout + NumChild + if_birth9
-             + FSI, family = binomial(link = "logit"), data = basepay)
-summary(reg29)
-#plan 1 and 3 significant at 90%, 7 at 95%
-
-reg30 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout + NumChild + if_birth9
-             + FSI + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550
-             , family = binomial(link = "logit"), data = basepay)
-summary(reg30)
-#plan 3 significant at 90%, and plan 7 at 95% 
-
-reg30 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
-               plan_5 + plan_7 + plan_8
-             + chout + NumChild 
-             + FSI + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550
-             , family = binomial(link = "logit"), data = basepay)
-summary(reg30)
+#no significant correlation 
