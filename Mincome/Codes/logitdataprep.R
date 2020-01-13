@@ -39,6 +39,22 @@ basepaypanel$individual[basepaypanel$DoubleHead1== 0 & basepaypanel$SingleHead1 
 
 basepaypanel <- basepaypanel[which(basepaypanel$SiteCode == 1),]
 
+#CP and CQ give information on DH and SH after the baseline interview
+#we can have a new variable that indicates if there are changes from DH to SH, 
+#and from SH to DH 
+
+basepaypanel$changehead <- 0 
+basepaypanel$changehead[basepaypanel$DoubleHead1 != basepaypanel$CP 
+                        | basepaypanel$SingleHead1 != basepaypanel$CQ] <- 1
+
+basepaypanel$changeDHSH <- 0 
+basepaypanel$changeDHSH[basepaypanel$changehead == 1 
+                        & basepaypanel$CQ  == 1] <- 1
+basepaypanel$changeSHDH <- 0
+basepaypanel$changeSHDH[basepaypanel$changehead == 1 
+                       & basepaypanel$CP  == 1] <- 1
+
+
 basepaypanel <- basepaypanel %>%
   group_by(FamNum) %>%
   arrange(month)  %>%
@@ -101,13 +117,15 @@ basepaypanel$if_increase[basepaypanel$sum != 0] <- 1
 
 #another dummy if the increase has been during the first nine months
 basepaypanel$increase9 = basepaypanel$increase*basepaypanel$firstnine
+#increase9 1 if the increase was in the first nine months
+#top is bigger than 0 if birth has happened within first nine months
 basepaypanel$top = 0
 basepaypanel$FamNum <- as.factor(basepaypanel$FamNum)
 for (i in levels(basepaypanel$FamNum)){
   s <- sum(basepaypanel[basepaypanel$FamNum == i, "increase9"])
   basepaypanel$top[basepaypanel$FamNum == i] <- s
 }
-
+#if_increase 9 is 1 if the birth was in first nine months 
 basepaypanel$if_increase9 = 0   
 basepaypanel$if_increase9[basepaypanel$top != 0] <- 1
 
@@ -171,13 +189,16 @@ basepaypanel_rem$DoubleHead1 <- as.numeric(as.character(basepaypanel_rem$DoubleH
 basepaypanel_rem$individual <- as.numeric(as.character(basepaypanel_rem$individual))
 basepaypanel_rem$SingleHead1 <- as.numeric(as.character(basepaypanel_rem$SingleHead1))
 basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
+basepaypanel_rem$changeDHSH <- as.numeric(as.character(basepaypanel_rem$changeDHSH))
+basepaypanel_rem$changeSHDH <- as.numeric(as.character(basepaypanel_rem$changeSHDH))
+
 
 basepay <- basepaypanel_rem %>%
   group_by(FamNum)%>%
   summarise(if_birth=mean(if_increase), 
             if_birth9=mean(if_increase9), control = mean(control), plan =mean(plan), 
             MAGE = mean(MAGE), FAGE = mean(FAGE), DH = mean(DoubleHead1), individual = mean(individual), 
-            SH =mean(SingleHead1), AC = mean(asscell)) %>% 
+            SH =mean(SingleHead1), AC = mean(asscell), changeDHSH = mean(changeDHSH), changeSHDH = mean(changeSHDH)) %>% 
   ungroup()
 
  
@@ -306,11 +327,10 @@ basepay$highschm <- as.factor(basepay$highschm)
 basepay$yrschm <- as.numeric(basepay$yrschm)
 basepay$yrschf <- as.numeric(basepay$yrschf)
 
-basepay$malepr <- 0
-basepay$malepr[!is.na(basepay$MAGE)] <- 1
-basepay$malepr <- as.factor(basepay$malepr)
 basepay <- basepay[-which(is.na(basepay$age)), ]
 
+#birth becomes 1 if there has been an increase in the number of children
+#except in the first nine months 
 basepay$birth <- 1 
 basepay$birth[basepay$if_birth == 0] <- 0 
 basepay$birth[basepay$if_birth9 == 1] <- 0
@@ -321,6 +341,3 @@ basepay$birth  <- as.numeric(as.character(basepay$birth ))
 saveRDS(basepay, "basepay.rds")
 
 
-
-check <- subset(basepay, select=c("FamNum","malepr", "DH"))
-check
