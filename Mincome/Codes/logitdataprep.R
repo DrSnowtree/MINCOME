@@ -336,6 +336,9 @@ basepay$birth[basepay$if_birth == 0] <- 0
 basepay$birth[basepay$if_birth9 == 1] <- 0
 
 basepay$birth  <- as.numeric(as.character(basepay$birth ))
+basepay$incbracket <-  as.factor(basepay$incbracket) 
+basepay$guarantee <-  as.factor(basepay$guarantee) 
+basepay$rate <-  as.factor(basepay$rate) 
 
 
 saveRDS(basepay, "basepay.rds")
