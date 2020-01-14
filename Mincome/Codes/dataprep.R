@@ -1,4 +1,4 @@
-getwd()
+setwd("W:/WU/Projekte/mincome/Mincome/Data")
 
 install.packages("compareGroups")
 install.packages("data.table")
@@ -27,6 +27,7 @@ install.packages("survival")
 install.packages("pltesim")
 install.packages("informR")
 install.packages("frailtypack")
+install.packages("utf8")
 
 library("compareGroups")
 library("data.table")
@@ -495,3 +496,67 @@ dataag$finish[is.na(dataag$finish)] = dataag$endage[is.na(dataag$finish)]
 dataag <- dataag[, c(1, 2, 89, 90, 3:88)]
 
 saveRDS(dataag, "dataag.rds")
+
+#information on children out of household 
+
+familydata <- read_excel("familydata.xlsx")
+
+familydata <- familydata %>%
+  dplyr::select("FamNum", 
+                "clbegan", "mrgbegan",
+               "mrgstatchng", "mrtstatus1",
+                "mrtstatus2",  "date", 
+                "prevmrg", "endprevmrg",  
+                "lengthmrg",  "chout", "chage")
+
+names(familydata)
+
+familydata <- familydata %>%  rename( 
+    FAMNUM = FamNum)
+familydata[familydata == -9] <- NA
+
+stata.merge <- function(x,y, by = intersect(names(x), names(y))){
+  
+  x[is.na(x)] <- Inf
+  y[is.na(y)] <- Inf
+  
+  matched <- merge(x, y, by.x = by, by.y = by, all = TRUE)
+  matched <- matched[complete.cases(matched),]
+  matched$merge <- "matched"
+  master <- merge(x, y, by.x = by, by.y = by, all.x = TRUE)
+  master <- master[!complete.cases(master),]
+  master$merge <- "master"
+  using <- merge(x, y, by.x = by, by.y = by, all.y = TRUE)
+  using <- using[!complete.cases(using),]
+  using$merge <- "using"
+  
+  df <- rbind(matched, master,using)
+  df[sapply(df, is.infinite)] <- NA
+  df
+}
+
+data_personperiod <- stata.merge(data_personperiod, familydata, by = "FAMNUM")
+
+basepay <- basepay[-which(basepay$merge == "master"), ]
+basepay[basepay == -9] <- NA
+basepay$chout[is.na(basepay$chout)] <- 0
+
+basepay$AC <- as.character(basepay$AC)
+basepay$incbracket <- substr(basepay$AC, 2, 3)
+basepay$incbracket <- as.factor(basepay$incbracket)
+
+
+basepay_rev <- read_excel("base_pay.data_revised_Dec 11, 2019.xlsx")
+basepay_rev[basepay_rev == -9] <- NA
+basepay_rev[basepay_rev == -7] <- NA
+basepay_rev[basepay_rev == -1] <- NA
+basepay_rev[basepay_rev == "."] <- NA
+
+basepay_rev <- basepay_rev  %>%
+  dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
+basepay$FAMNUM <- basepay$FamNum
+basepay <- merge(basepay_rev, basepay, by = "FAMNUM")
+basepay$highschf <- as.factor(basepay$highschf)
+basepay$highschm <- as.factor(basepay$highschm)
+basepay$yrschm <- as.numeric(basepay$yrschm)
+basepay$yrschf <- as.numeric(basepay$yrschf)
