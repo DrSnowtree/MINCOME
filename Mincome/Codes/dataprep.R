@@ -461,60 +461,76 @@ data <- data[, c(1, 3, 2, 4, 86, 84, 24, 27, 28, 5:23, 25, 26, 29:83, 85)]
 data_personperiod <- data
 saveRDS(data_personperiod, "data_personperiod.rds")
 
-#structure for Andersen-Gill or PWP models 
-
-data$a <- 0
-
-data$a[data$age == 15 | data$age == 50] <- 1
-
-
-data <- data %>%
-  group_by(OID) %>%
-  arrange(age)  %>%
-  mutate(prevj = dplyr::lag(j, 1))  %>%
-  ungroup()%>%
-  arrange(OID, age)
-
-data$a[data$prevj != data$j] <- 1
-
-dataag <- data[which(data$a == 1), ]
-dataag$start <- dataag$age
-
-dataag <- dataag %>%
-  group_by(OID) %>%
-  arrange(desc(age))  %>%
-  mutate(finish = dplyr::lag(start, 1))  %>%
-  ungroup()%>%
-  arrange(OID, age)
-
-dataag <- dataag[-which(dataag$start == 50 & (is.na(dataag$finish))), ]
-
-dataag$endage <-1977 - dataag$birthyear
-
-dataag$finish[is.na(dataag$finish)] = dataag$endage[is.na(dataag$finish)]
-
-dataag <- dataag[, c(1, 2, 89, 90, 3:88)]
-
-saveRDS(dataag, "dataag.rds")
-
 #information on children out of household 
 
 familydata <- read_excel("familydata.xlsx")
+familydata <- familydata %>%  rename( 
+  FAMNUM = "FAMNUM...1")
 
 familydata <- familydata %>%
-  dplyr::select("FamNum", 
-                "clbegan", "mrgbegan",
-               "mrgstatchng", "mrtstatus1",
-                "mrtstatus2",  "date", 
-                "prevmrg", "endprevmrg",  
-                "lengthmrg",  "chout", "chage")
+  dplyr::select("FAMNUM", 
+                "clbegan", "mrgbegan", "mrgbegan2",
+               "mrgstatchng1",  "mrgstatchng2", "mrgstatchng3", 
+               "mrgstatchng4",  "mrgstatchng5", "mrgstatchng6", "mrgstatchng7",  
+               "mrtstatus1", "mrtstatus2",  "mrtstatus3", 
+               "mrtstatus4",  "mrtstatus5",  "mrtstatus6",  "mrtstatus7", 
+               "mrtstatus8", "mrtstatus9", "prevmrg", "endprevmrg",  
+                "lengthmrg", "lengthmrgprev", "chout", "chage", 
+               "datesepcl", "datesepmrg")
 
 names(familydata)
 
-familydata <- familydata %>%  rename( 
-    FAMNUM = FamNum)
-familydata[familydata == -9] <- NA
 
+familydata[familydata == -9] <- NA
+familydata[familydata == -8] <- NA
+familydata[familydata == -4] <- NA
+
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+
+#marriage ends, beginnings, turn the date to a proper year
+
+familydata$clbegan <- substrRight(familydata$clbegan, 2)
+familydata$clbegan <-ifelse(!is.na(familydata$clbegan), paste("19", familydata$clbegan, sep=""), paste("NA"))
+
+familydata$mrgbegan <- substrRight(familydata$mrgbegan, 2)
+familydata$mrgbegan <-ifelse(!is.na(familydata$mrgbegan), paste("19", familydata$mrgbegan, sep=""), paste(NA))
+familydata$mrgbegan2 <- substrRight(familydata$mrgbegan2, 2)
+familydata$mrgbegan2 <-ifelse(!is.na(familydata$mrgbegan2), paste("19", familydata$mrgbegan2, sep=""), paste(NA))
+
+familydata[familydata == "NA"] <- NA
+
+#mrgbegan and mrgbegan2 are the same info, just asked to male or female, so let´s combine them 
+familydata$mrgbegan <-
+  ifelse(!is.na(familydata$mrgbegan), paste(familydata$mrgbegan), paste(familydata$mrgbegan2))
+
+familydata[familydata == "NA"] <- NA
+
+familydata$mrgstatchng1 <- substrRight(familydata$mrgstatchng1, 2)
+familydata$mrgstatchng1 <-ifelse(!is.na(familydata$mrgstatchng1), paste("19", familydata$mrgstatchng1, sep=""), paste(NA))
+familydata$mrgstatchng2 <- substrRight(familydata$mrgstatchng2, 2)
+familydata$mrgstatchng2 <-ifelse(!is.na(familydata$mrgstatchng2), paste("19", familydata$mrgstatchng2, sep=""), paste(NA))
+familydata$mrgstatchng3 <- substrRight(familydata$mrgstatchng3, 2)
+familydata$mrgstatchng3 <-ifelse(!is.na(familydata$mrgstatchng3), paste("19", familydata$mrgstatchng2, sep=""), paste(NA))
+familydata$mrgstatchng4 <- substrRight(familydata$mrgstatchng4, 2)
+familydata$mrgstatchng4 <-ifelse(!is.na(familydata$mrgstatchng4), paste("19", familydata$mrgstatchng3, sep=""), paste(NA))
+familydata$mrgstatchng5 <- substrRight(familydata$mrgstatchng5, 2)
+familydata$mrgstatchng5 <-ifelse(!is.na(familydata$mrgstatchng5), paste("19", familydata$mrgstatchng5, sep=""), paste(NA))
+familydata$mrgstatchng6 <- substrRight(familydata$mrgstatchng6, 2)
+familydata$mrgstatchng6 <-ifelse(!is.na(familydata$mrgstatchng6), paste("19", familydata$mrgstatchng6, sep=""), paste(NA))
+familydata$mrgstatchng7 <- substrRight(familydata$mrgstatchng7, 2)
+familydata$mrgstatchng7 <-ifelse(!is.na(familydata$mrgstatchng7), paste("19", familydata$mrgstatchng7, sep=""), paste(NA))
+
+
+familydata$endprevmrg <- substrRight(familydata$endprevmrg, 2)
+familydata$endprevmrg <-ifelse(!is.na(familydata$endprevmrg), paste("19", familydata$endprevmrg, sep=""), paste(NA))
+familydata$datesepcl <- substrRight(familydata$datesepcl, 2)
+familydata$datesepcl <-ifelse(!is.na(familydata$datesepcl), paste("19", familydata$datesepcl, sep=""), paste(NA))
+familydata$datesepmrg <- substrRight(familydata$datesepmrg, 2)
+familydata$datesepmrg <-ifelse(!is.na(familydata$datesepmrg), paste("19", familydata$datesepmrg, sep=""), paste(NA))
+familydata[familydata == "NA"] <- NA
 stata.merge <- function(x,y, by = intersect(names(x), names(y))){
   
   x[is.na(x)] <- Inf
