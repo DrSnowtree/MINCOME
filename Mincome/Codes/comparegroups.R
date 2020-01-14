@@ -85,3 +85,15 @@ export2latex(createTable(comparefamst))
 boxplot(basepaycross_rem$FAMSIZE, horizontal = TRUE)
 boxplot(basepaycross_rem$AGEF, horizontal = TRUE)
 boxplot(basepaycross_rem$AGEM, horizontal = TRUE)
+
+
+compareplans = compareGroups::compareGroups(plan ~ FSI + NumChild
+                                            + DH + SH 
+                                            + age
+                                            + MAGE, data = basepay,
+                                            max.ylev = 10 )
+
+
+compareplans <-  compareGroups::createTable(comparechild)
+print(compareplans)
+export2latex(createTable(compareplans))

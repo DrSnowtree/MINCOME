@@ -2,7 +2,7 @@
 
 #baseline, treatment variables and stratifying variables only 
 
-reg1 <- glm(formula = birth ~ treated + DH + FSI + incbracket 
+reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
             , family = binomial(link = "logit"), data = basepay)
 summary(reg1)
 
@@ -14,7 +14,7 @@ summary(reg2)
 # with all controls except changes in composition of the household 
 
 
-reg3 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
+reg3 <- glm(formula = birth ~ treated + SH + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550 + FSI   + incbracket  +
                chout + if_birth9, 
              family = binomial(link = "logit"), data = basepay)
@@ -77,7 +77,8 @@ summary(reg10)
 reg11 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
                yrschf + yrschm + changeDHSH + changeSHDH + MAGE+
-               chout + if_birth9 + NumAdults, family = binomial(link = "logit"), data = basepay)
+               chout + if_birth9 + NumAdults
+             + costch, family = binomial(link = "logit"), data = basepay)
 summary(reg11)
 
 reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
@@ -108,3 +109,55 @@ cor.test(basepay$plan_8, basepay$changeSHDH, method=c("pearson", "kendall", "spe
 
 
 #no significant correlation 
+
+#visualize coefficients 
+
+install.packages("jtools")
+install.packages("ggstance")
+
+library(jtools)
+
+plot_summs(reg2, reg4, scale = TRUE, plot.distributions = TRUE, 
+           model.names = c("Without controls", "With controls"),
+           coefs = c("Plan 1" = "plan_1","Plan 2" = "plan_2", "Plan 3" =
+                       "plan_3",  
+                     "Plan 4" ="plan_4", 
+                     "Plan 5" ="plan_5", 
+                     "Plan 7" ="plan_7", 
+                     "Plan 8" ="plan_8"),  
+                     inner_ci_level = .9)
+
+plot_summs(reg2, reg4, scale = TRUE, plot.distributions = FALSE, 
+           model.names = c("Without controls", "With controls"),
+           coefs = c("Plan 1" = "plan_1","Plan 2" = "plan_2", "Plan 3" =
+                       "plan_3",  
+                     "Plan 4" ="plan_4", 
+                     "Plan 5" ="plan_5", 
+                     "Plan 7" ="plan_7", 
+                     "Plan 8" ="plan_8"),  
+           inner_ci_level = .9, colors = "Qual3")
+
+plot_summs(reg1, reg3, scale = TRUE, plot.distributions = TRUE, 
+           model.names = c("Without controls", "With controls"),
+           coefs = c("Treated" ="treated"),  
+           inner_ci_level = .9, colors = "Qual3")
+
+plot_summs(reg1, reg3, scale = TRUE, plot.distributions = FALSE, 
+           model.names = c("Without controls", "With controls"),
+           coefs = c("Treated" ="treated"),  
+           inner_ci_level = .9, colors = "Qual3")
+
+length(which(basepay$treated == 0 & is.na(basepay$MAGE))) 
+length(which(basepay$treated == 1 & is.na(basepay$MAGE)))       
+       
+length(which(basepay$treated == 0)) 
+length(which(basepay$treated == 1))
+
+res <- summary(reg1)
+
+pt(coef(res)[, 1], reg1$df, lower = FALSE)
+
+
+res <- summary(reg1)
+
+pt(coef(res)[, 1], reg1$df, lower = FALSE)

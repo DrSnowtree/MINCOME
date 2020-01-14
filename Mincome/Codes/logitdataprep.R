@@ -1,3 +1,6 @@
+setwd("W:/WU/Projekte/mincome/Mincome/Data")
+
+
 library("haven")
 library("dplyr")
 library("tidyr") 
@@ -317,9 +320,10 @@ basepay_rev[basepay_rev == -9] <- NA
 basepay_rev[basepay_rev == -7] <- NA
 basepay_rev[basepay_rev == -1] <- NA
 basepay_rev[basepay_rev == "."] <- NA
+names(basepay_rev)
 
 basepay_rev <- basepay_rev  %>%
-dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
+dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf, "Child care cost...74")
 basepay$FAMNUM <- basepay$FamNum
 basepay <- merge(basepay_rev, basepay, by = "FAMNUM")
 basepay$highschf <- as.factor(basepay$highschf)
@@ -340,7 +344,10 @@ basepay$incbracket <-  as.factor(basepay$incbracket)
 basepay$guarantee <-  as.factor(basepay$guarantee) 
 basepay$rate <-  as.factor(basepay$rate) 
 
+basepay <- basepay %>%  rename(
+  costch = "Child care cost...74")
+basepay$costch <- as.numeric(basepay$costch)
 
 saveRDS(basepay, "basepay.rds")
 
-
+#get information on expected or actual childcare cost 
