@@ -531,48 +531,88 @@ familydata$datesepcl <-ifelse(!is.na(familydata$datesepcl), paste("19", familyda
 familydata$datesepmrg <- substrRight(familydata$datesepmrg, 2)
 familydata$datesepmrg <-ifelse(!is.na(familydata$datesepmrg), paste("19", familydata$datesepmrg, sep=""), paste(NA))
 familydata[familydata == "NA"] <- NA
-stata.merge <- function(x,y, by = intersect(names(x), names(y))){
-  
-  x[is.na(x)] <- Inf
-  y[is.na(y)] <- Inf
-  
-  matched <- merge(x, y, by.x = by, by.y = by, all = TRUE)
-  matched <- matched[complete.cases(matched),]
-  matched$merge <- "matched"
-  master <- merge(x, y, by.x = by, by.y = by, all.x = TRUE)
-  master <- master[!complete.cases(master),]
-  master$merge <- "master"
-  using <- merge(x, y, by.x = by, by.y = by, all.y = TRUE)
-  using <- using[!complete.cases(using),]
-  using$merge <- "using"
-  
-  df <- rbind(matched, master,using)
-  df[sapply(df, is.infinite)] <- NA
-  df
+
+
+saveRDS(familydata, "familydata.rds")
+
+data_personperiod <- merge(data_personperiod, familydata, by = "FAMNUM")
+saveRDS(data_personperiod, "data_personperiod.rds")
+
+#construct marital history 
+
+data_personperiod$married <- 0
+
+data_personperiod$married[data_personperiod$year == data_personperiod$mrgbegan] <- 1
+data_personperiod$prevmrgbegan <- NA
+data_personperiod[data_personperiod == "NA"] <- NA
+
+data_personperiod$endprevmrg<- as.numeric(data_personperiod$endprevmrg) 
+
+data_personperiod$prevmrgbegan <- 
+                data_personperiod$endprevmrg - data_personperiod$lengthmrgprev
+
+
+data_personperiod$married[data_personperiod$year == data_personperiod$prevmrgbegan] <- 1
+
+
+#merge the info on the date of change in marital status into one variable, this most likely happens only once 
+#anyway 
+
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng2))
+data_personperiod[data_personperiod == "NA"] <- NA
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng3))
+data_personperiod[data_personperiod == "NA"] <- NA
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng4))
+data_personperiod[data_personperiod == "NA"] <- NA
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng5))
+data_personperiod[data_personperiod == "NA"] <- NA
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng6))
+data_personperiod[data_personperiod == "NA"] <- NA
+data_personperiod$mrgstatchng1 <-
+  ifelse(!is.na(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng1), paste(data_personperiod$mrgstatchng7))
+data_personperiod[data_personperiod == "NA"] <- NA
+
+data_personperiod <- data_personperiod %>%  rename(
+  mrgstatchng = mrgstatchng1)
+
+
+data_personperiod$separated <- 0
+data_personperiod$separated[data_personperiod$year == data_personperiod$datesepcl |
+                            data_personperiod$year == data_personperiod$datesepmrg |
+                            data_personperiod$year == data_personperiod$endprevmrg] <- 1
+data_personperiod$married[data_personperiod$separated == 1] <- 0
+#create a marriage id 
+data_personperiod$mrgid <- 
+  ifelse(data_personperiod$married == 1, paste(data_personperiod$OID, data_personperiod$year, sep=""), NA)
+#mrgid should change in the year of separation too 
+data_personperiod$mrgid <- 
+  ifelse(data_personperiod$separated == 1, paste(data_personperiod$OID, data_personperiod$year, sep=""), data_personperiod$mrgid)
+
+class(data_personperiod$mrgid)
+data_personperiod[data_personperiod == "NA"] <- NA
+saveRDS(data_personperiod, "data_personperiod.rds")
+
+
+#Adding the married wing dummy for all months until separation 
+
+
+marie = NA
+fem = data_personperiod$OID[1]
+for (i in 1:dim(data_personperiod)[1]){
+  if (!is.na(data_personperiod$mrgid[i])){
+    marie = data_personperiod$married[i]
+    fem = data_personperiod$OID[i]
+  }
+  else if (is.na(data_personperiod$mrgid[i]) && data_personperiod$OID[i] == fem){
+    data_personperiod$married[i] = marie
+  }
 }
 
-data_personperiod <- stata.merge(data_personperiod, familydata, by = "FAMNUM")
 
-basepay <- basepay[-which(basepay$merge == "master"), ]
-basepay[basepay == -9] <- NA
-basepay$chout[is.na(basepay$chout)] <- 0
-
-basepay$AC <- as.character(basepay$AC)
-basepay$incbracket <- substr(basepay$AC, 2, 3)
-basepay$incbracket <- as.factor(basepay$incbracket)
-
-
-basepay_rev <- read_excel("base_pay.data_revised_Dec 11, 2019.xlsx")
-basepay_rev[basepay_rev == -9] <- NA
-basepay_rev[basepay_rev == -7] <- NA
-basepay_rev[basepay_rev == -1] <- NA
-basepay_rev[basepay_rev == "."] <- NA
-
-basepay_rev <- basepay_rev  %>%
-  dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf)
-basepay$FAMNUM <- basepay$FamNum
-basepay <- merge(basepay_rev, basepay, by = "FAMNUM")
-basepay$highschf <- as.factor(basepay$highschf)
-basepay$highschm <- as.factor(basepay$highschm)
-basepay$yrschm <- as.numeric(basepay$yrschm)
-basepay$yrschf <- as.numeric(basepay$yrschf)
+data_personperiod <- data_personperiod %>%  rename(
+  birth = event)
