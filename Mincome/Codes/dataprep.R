@@ -616,3 +616,14 @@ for (i in 1:dim(data_personperiod)[1]){
 
 data_personperiod <- data_personperiod %>%  rename(
   birth = event)
+
+
+data_personperiod <- subset( data_personperiod, select = -c(14, 16, 32:68) )
+
+saveRDS(data_personperiod, "data_personperiod.rds")
+
+
+#delete the observations we did not include in the basepay 
+
+datapp <- data_personperiod[(data_personperiod$FAMNUM %in% basepay$FAMNUM),]
+saveRDS(datapp, "datapp.rds")
