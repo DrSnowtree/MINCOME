@@ -255,8 +255,7 @@ stargazer(m18)
 datapp3 <- datapp[-which(!is.na(datapp1$datesepcl)|!is.na(datapp1$datesepmrg)), ]
 m19 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
              + plan_3*experiment + plan_4*experiment + plan_5*experiment 
-             + plan_7*experiment + plan_8*experiment + age1519 + age2024 + age2429 
-             + age3034 + age3539 + age4044 + (1|OID) + factor(j) + factor(year)
+             + plan_7*experiment + plan_8*experiment + factor(age) + (1|OID) + factor(j) + factor(year)
              + married, 
              data = datapp3)
 stargazer(m19)
@@ -265,3 +264,4 @@ stargazer(m19)
 
 saveRDS(datapp1, "datapp1.rds")
 saveRDS(datapp2, "datapp2.rds")
+saveRDS(datapp3, "datapp3.rds")
