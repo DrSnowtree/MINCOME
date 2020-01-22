@@ -1,5 +1,5 @@
 
-
+basepay$if_birth[basepay$FAMNUM == 14324] <- 0 
 #baseline, treatment variables and stratifying variables only 
 
 reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
@@ -15,7 +15,7 @@ summary(reg2)
 
 
 reg3 <- glm(formula = birth ~ treated + SH + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550 + FSI   + incbracket  +
+               age3034 + age3539 + age4044 + age4550 + FSI  + incbracket  +
                chout + if_birth9, 
              family = binomial(link = "logit"), data = basepay)
 summary(reg3)

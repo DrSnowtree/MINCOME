@@ -625,5 +625,24 @@ saveRDS(data_personperiod, "data_personperiod.rds")
 
 #delete the observations we did not include in the basepay 
 
-datapp <- data_personperiod[(data_personperiod$FAMNUM %in% basepay$FAMNUM),]
+datapp <- data_personperiod[which(data_personperiod$FAMNUM %in% basepay$FAMNUM),]
 saveRDS(datapp, "datapp.rds")
+
+
+#decades instead of years 
+datapp$decade <- 0 
+datapp$decade[datapp$year == 1930  |datapp$year ==1931 |datapp$year ==1932 |datapp$year ==1933
+              |datapp$year == 1934  | datapp$year ==1935 |datapp$year ==1936
+              |datapp$year ==1937 | datapp$year == 1938 |datapp$year == 1939] <- "30s" 
+datapp$decade[datapp$year == 1940  |datapp$year ==1941 |datapp$year ==1942 |datapp$year ==1943
+              |datapp$year == 1944  | datapp$year ==1945 |datapp$year ==1946
+              |datapp$year ==1947 | datapp$year == 1948 |datapp$year == 1939] <- "40s" 
+datapp$decade[datapp$year == 1950  |datapp$year ==1951  |datapp$year ==1952 |datapp$year ==1953
+              |datapp$year == 1954  | datapp$year ==1955 |datapp$year ==1956
+              |datapp$year ==1957 | datapp$year == 1958 |datapp$year == 1959] <- "50s" 
+datapp$decade[datapp$year == 1960  |datapp$year ==1961  |datapp$year ==1962 |datapp$year ==1963
+              |datapp$year == 1964  | datapp$year ==1965 |datapp$year ==1966
+              |datapp$year ==1967 | datapp$year == 1968 |datapp$year == 1969] <- "60s" 
+datapp$decade[datapp$year == 1970  |datapp$year ==1971 |datapp$year ==1972 |datapp$year ==1973
+              |datapp$year == 1974  | datapp$year ==1975 |datapp$year ==1976
+              |datapp$year ==1977] <- "70s" 
