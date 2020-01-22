@@ -240,6 +240,28 @@ m17 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment
              data = datapp)
 stargazer(m17)
 
+#plans 5 and 7 significant at 70%
+
+m18 <- glmer(formula = birth ~ treated*experiment + age1519 + age2024 + age2429 
+             + age3034 + age3539 + age4044 + (1|OID) + factor(j) + factor(year), 
+             data = datapp)
+stargazer(m18)
+
+#not significant 
+
+
+#adding marital status, so we have to erase those that have been divorced 
+
+datapp3 <- datapp[-which(!is.na(datapp1$datesepcl)|!is.na(datapp1$datesepmrg)), ]
+m19 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
+             + plan_3*experiment + plan_4*experiment + plan_5*experiment 
+             + plan_7*experiment + plan_8*experiment + age1519 + age2024 + age2429 
+             + age3034 + age3539 + age4044 + (1|OID) + factor(j) + factor(year)
+             + married, 
+             data = datapp3)
+stargazer(m19)
+
+#plan 7 significant and positive at 9
 
 saveRDS(datapp1, "datapp1.rds")
 saveRDS(datapp2, "datapp2.rds")
