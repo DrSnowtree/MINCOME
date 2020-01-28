@@ -344,10 +344,52 @@ basepay$incbracket <-  as.factor(basepay$incbracket)
 basepay$guarantee <-  as.factor(basepay$guarantee) 
 basepay$rate <-  as.factor(basepay$rate) 
 
+#get information on expected or actual childcare cost 
 basepay <- basepay %>%  rename(
   costch = "Child care cost...74")
 basepay$costch <- as.numeric(basepay$costch)
 
-saveRDS(basepay, "basepay.rds")
 
-#get information on expected or actual childcare cost 
+#actual payments 
+
+basepaypanel_revised <- read_dta("W:/WU/Projekte/mincome/Mincome/Data/raw or not complete data/basepaypanel_revised.dta")
+basepaypanel_revised <- basepaypanel_revised[which(basepaypanel_revised$SiteCode ==1), ]
+basepaypanel_revised <- basepaypanel_revised[, c(1,2, 118)]
+basepaypanel_revised$PA <- as.numeric(as.character(basepaypanel_revised$PA))
+basepaypanel_revised$PA[basepaypanel_revised$PA == -1] <- 0 
+basepaypanel_revised$totpay <- 0
+
+
+basepaypanel_revised <- basepaypanel_revised %>% 
+  group_by(FamNum) %>% 
+  summarise(totpay = sum(PA))%>%
+  ungroup()
+basepay <- merge(basepay, basepaypanel_revised, by ="FamNum", all = FALSE)
+
+
+basepay$g1 <- 0
+basepay$g1[basepay$plan == 2 | basepay$plan == 5] <- 1
+
+basepay$g2 <- 0
+basepay$g2[basepay$plan == 1 | basepay$plan == 4 | basepay$plan == 8] <- 1
+
+basepay$g3 <- 0
+basepay$g3[basepay$plan == 3 | basepay$plan == 7] <- 1
+
+basepaypanel_revised <- readRDS("W:/WU/Projekte/mincome/Mincome/Data/raw or not complete data/basepaypanel_revised.rds")
+
+basepaypanel_revised <- basepaypanel_revised[which(basepaypanel_revised$month1 == 1), ]
+basepayAC <- basepaypanel_revised[, c(1, 111)]
+basepayAC$AC <- as.character(basepayAC$AC)
+basepayAC$firstplan <- substr(basepayAC$AC, 1, 1)
+
+basepay <- merge(basepay, basepayAC, by = "FamNum", all = F)
+
+basepay <- basepay %>% 
+  group_by(firstplan) %>% 
+  mutate(meanpay = mean(totpay))%>%
+  ungroup()
+
+
+
+saveRDS(basepay, "basepay.rds")
