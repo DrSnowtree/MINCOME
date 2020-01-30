@@ -82,7 +82,7 @@ summary(reg10)
 reg11 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
                yrschf + yrschm +  MAGE+
-               chout + if_birth9 + costch
+               chout + if_birth9 + costch + femhome
              , family = binomial(link = "logit"), data = basepay)
 summary(reg11)
 
@@ -90,7 +90,7 @@ reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 +
                plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550  +
                FSI + NumChild  + incbracket +  yrschf + yrschm + MAGE +
-               chout + if_birth9 + costch, 
+               chout + if_birth9 + costch + femhome, 
              family = binomial(link = "logit"), data = basepay)
 summary(reg12)
 
