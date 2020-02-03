@@ -3,17 +3,22 @@ basepay$if_birth[basepay$FAMNUM == 14324] <- 0
 basepay$costch <- as.numeric(basepay$costch)
 saveRDS(basepay, "basepay.rds")
 library("glm2")
+library("oddsratio")
+library("margins")
+
 #baseline, treatment variables and stratifying variables only 
 
 reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
             , family = binomial(link = "logit"), data = basepay)
-summary(reg1)
+effects_reg1 = margins(reg1) 
+effects_reg1 <- summary(effects_reg1)
+
 
 reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8 + 
               FSI + incbracket, family = binomial(link = "logit"), data = basepay)
-summary(reg2)
-
+effects_reg2 = margins(reg2) 
+effects_reg2 <- summary(effects_reg2)
 # with all controls except changes in composition of the household 
 
 
@@ -61,41 +66,46 @@ reg8 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 +
                chout + if_birth9, family = binomial(link = "logit"), data = basepay)
 summary(reg8)
 
-# add changes in the household composition and number of adults 
+# add changes in the household composition
 basepay$NumAdults[is.na(basepay$NumAdults)] <- 0
-basepay$costch <- as.numeric(basepay$costch)
+
 reg9 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
               yrschf + costch + 
               chout + if_birth9
-            + changeDHSH + changeSHDH, family = binomial(link = "logit"), data = basepay)
-summary(reg9)
+            + changeDHSH + changeSHDH
+            +femhome, family = binomial(link = "logit"), data = basepay)
+effects_reg9 = margins(reg9) 
+
+effects_reg9
+
 
 reg10 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
               age3034 + age3539 + age4044 + age4550  + costch + 
               FSI + NumChild  + incbracket +  yrschf +
-              chout + if_birth9 + changeDHSH + changeSHDH, family = binomial(link = "logit"), data = basepay)
-summary(reg10)
+              chout + if_birth9 + changeDHSH + changeSHDH
+             + femhome, family = binomial(link = "logit"), data = basepay)
 
+effects_reg10 = margins(reg10) 
+effects_reg10 <- summary(effects_reg10)
 
 reg11 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
+               age3034 + age3539 + age4044 + age4550  + NumChild  +
                yrschf + yrschm +  MAGE+
                chout + if_birth9 + costch + femhome
              , family = binomial(link = "logit"), data = basepay)
-summary(reg11)
+effects_reg11 = margins(reg11) 
+effects_reg11 <- summary(effects_reg11)
 
 reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
                plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550  +
-               FSI + NumChild  + incbracket +  yrschf + yrschm + MAGE +
+               age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm + MAGE +
                chout + if_birth9 + costch + femhome, 
              family = binomial(link = "logit"), data = basepay)
-summary(reg12)
+effects_reg12 = margins(reg12) 
+effects_reg12 <- summary(effects_reg12)
 
-stargazer(reg1, reg2, reg3, reg4, reg5, reg6)
-stargazer(reg7, reg8, reg9, reg10, reg11, reg12)
 
 #see if probability of becoming a DH changes with being treated or not 
 
@@ -122,6 +132,7 @@ install.packages("ggstance")
 
 library(jtools)
 
+
 plot_summs(reg2, reg10, reg12,  scale = TRUE, plot.distributions = FALSE, 
            model.names = c("Baseline model", "With controls (female householder)", 
                            "With controls (both householders)"),
@@ -131,16 +142,17 @@ plot_summs(reg2, reg10, reg12,  scale = TRUE, plot.distributions = FALSE,
                      "Plan 5" ="plan_5", 
                      "Plan 7" ="plan_7", 
                      "Plan 8" ="plan_8"),  
-                     inner_ci_level = .9, colors = "Qual3")
+                     inner_ci_level = .9, colors = "Qual3", 
+           exp = TRUE)
 
 plot_summs(reg1, reg9, reg11,  scale = TRUE, plot.distributions = FALSE, 
            model.names = c("Baseline model", "With controls (female householder)", 
                            "With controls (both householders)"),
            coefs = c("Treated" = "treated"),  
-           inner_ci_level = .9, colors = "Qual3")
+           inner_ci_level = .9, colors = "Qual3", exp=TRUE)
 
+stargazer(reg1, reg2, reg9, reg10, reg11, reg12, apply.coef=exp, t.auto=F, p.auto=F, report = "vct*")
 
-stargazer(reg1, reg2, reg9, reg10, reg11, reg12)
 
 plot_summs(reg2, reg4, scale = TRUE, plot.distributions = FALSE, 
            model.names = c("Without controls", "With controls"),

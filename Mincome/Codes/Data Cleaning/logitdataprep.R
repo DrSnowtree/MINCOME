@@ -391,5 +391,32 @@ basepay <- basepay %>%
   ungroup()
 
 
+labpartinfo <- base_pay_data_revised_Dec_11_2019 %>%
+  dplyr::select ("FAMNUM", "lappartmale", "lappartfemale")
+basepay <- merge(labpartinfo, basepay, by = "FAMNUM", all= FALSE)
+basepay[basepay == -9] <- NA
 
+
+#bothlab is a dummy indicating that both householders are working, femlab is  a single woman 
+#working, and femhome is 1 when a male householder is working, and the woman is not 
+
+basepay$bothlab <- 0
+
+basepay$bothlab <- ifelse(!is.na(basepay$lappartfemale) & !is.na(basepay$lappartmale)
+                          & basepay$lappartfemale == 1 & basepay$lappartmale == 1, 1, basepay$bothlab)
+basepay$femlab <- 0
+basepay$femlab <- ifelse(!is.na(basepay$lappartfemale) & is.na(basepay$lappartmale)
+                         & basepay$lappartfemale == 1, 1, basepay$femlab)
+
+
+basepay$femhome <- 0
+basepay$femhome <- ifelse(!is.na(basepay$lappartfemale) & !is.na(basepay$lappartmale)
+                          & basepay$lappartfemale == 0 & basepay$lappartmale == 1, 1, basepay$femhome)
+
+
+basepay$bothlab <- as.factor(basepay$bothlab)
+basepay$femlab <- as.factor(basepay$femlab)
+basepay$femhome <- as.factor(basepay$femhome)
+basepay$costch <- as.numeric(basepay$costch)
 saveRDS(basepay, "basepay.rds")
+
