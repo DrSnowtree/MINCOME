@@ -5,20 +5,19 @@ saveRDS(basepay, "basepay.rds")
 library("glm2")
 library("oddsratio")
 library("margins")
+library("mfx")
+library(jtools)
 
 #baseline, treatment variables and stratifying variables only 
 
 reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
             , family = binomial(link = "logit"), data = basepay)
-effects_reg1 = margins(reg1) 
-effects_reg1 <- summary(effects_reg1)
 
 
 reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8 + 
               FSI + incbracket, family = binomial(link = "logit"), data = basepay)
-effects_reg2 = margins(reg2) 
-effects_reg2 <- summary(effects_reg2)
+
 # with all controls except changes in composition of the household 
 
 
@@ -130,7 +129,6 @@ cor.test(basepay$plan_8, basepay$changeSHDH, method=c("pearson", "kendall", "spe
 install.packages("jtools")
 install.packages("ggstance")
 
-library(jtools)
 
 
 plot_summs(reg2, reg10, reg12,  scale = TRUE, plot.distributions = FALSE, 
@@ -268,8 +266,8 @@ pcoef <- plot_summs(r3, r7, scale = TRUE, plot.distributions = FALSE,
            coefs = c("Plan 3" ="plan_3", "Plan 7" ="plan_7"),  
            inner_ci_level = .9, colors = "Qual3")
 pcoef <- pcoef + theme_bw() + theme(panel.border = element_blank(), 
-                                    panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
-
+                                    panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis)
+.line = element_line(colour = "black")
 
 pcoef <- pcoef + labs(x = "Coefficient estimate", y = "Variable") 
 pcoef

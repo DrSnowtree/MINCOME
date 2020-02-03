@@ -420,3 +420,8 @@ basepay$femhome <- as.factor(basepay$femhome)
 basepay$costch <- as.numeric(basepay$costch)
 saveRDS(basepay, "basepay.rds")
 
+
+library(foreign)
+write.dta(basepay, "basepay.dta") 
+
+
