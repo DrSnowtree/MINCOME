@@ -11,10 +11,10 @@ reg1 <- glm(formula = birth ~ treated,
             x = TRUE, data = basepay)
 p <- ggpredict(reg1, "treated")
 plot(p)
-
+basepay$plan_2 <- as.factor(basepay$plan_2)
 reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8, family = binomial(link = "logit"), data = basepay)
-p <- ggpredict(reg2, "plan_7")
+p <- ggpredict(reg2, c("plan_7","plan_1"))
 plot(p)
 
 

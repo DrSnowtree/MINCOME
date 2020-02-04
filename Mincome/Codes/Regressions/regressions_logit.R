@@ -7,6 +7,7 @@ library("oddsratio")
 library("margins")
 library("mfx")
 library(jtools)
+library(dplyr)
 
 #baseline, treatment variables and stratifying variables only 
 
@@ -192,87 +193,7 @@ basepay$age40plus[basepay$age > 39] <- 1
 base1 <- basepay[which(basepay$plan == "7"), ]
 boxplot(base1$age)
 
-class(basepay$NumChild)
-base1 <- basepay[which(basepay$plan == "9"| basepay$plan == "1"), ]
-r1 <- glm(formula = birth ~ plan_1 + FSI + incbracket
-          + age1519 + age2024 + age2429
-          + age3034 + age3539 + NumChild, family = binomial(link = "logit"), 
-          data = base1)
-summary(r1)
 
-base2 <- basepay[which(basepay$plan == "9"| basepay$plan == "2"), ]
 
-r2 <- glm(formula = birth ~ plan_2 +  
-            DH + individual + factor(age) +  FSI + NumChild  + incbracket 
-          +  yrschf + yrschm + MAGE +
-            chout + if_birth9 + costch, family = binomial(link = "logit"), 
-          data = base2)
-summary(r2)
-
-base3 <- basepay[which(basepay$plan == "9"| basepay$plan == "3"), ]
-
-r3 <- glm(formula = birth ~ plan_3 +  
-            FSI + incbracket + DH + age1519 + age2024 + age2429 + 
-            age3034 + age3539 + age4044 + age4550  +
-            FSI   + incbracket, family = binomial(link = "logit"), 
-          data = base3)
-summary(r3)
-
-base4 <- basepay[which(basepay$plan == "9"| basepay$plan == "4"), ]
-
-r4 <- glm(formula = birth ~ plan_4 +  
-            FSI + incbracket + DH + age1519 + age2024 + age2429 + 
-            age3034 + age3539 + age4044 + age4550  +
-            FSI   + incbracket, family = binomial(link = "logit"), 
-          data = base4)
-summary(r4)
-
-base5 <- basepay[which(basepay$plan == "9"| basepay$plan == "5"), ]
-
-r5 <- glm(formula = birth ~ plan_5 + FSI
-          + age1519 + age2024 + age2429 + 
-            age3034 + age3539, family = binomial(link = "logit"), 
-          data = base5)
-summary(r5)
-
-base7 <- basepay[which(basepay$plan == "9"| basepay$plan == "7"), ]
-
-r7 <- glm(formula = birth ~ plan_7 +  
-            FSI + incbracket + DH + age1519 + age2024 + age2429 + 
-            age3034 + age3539 + age4044 + age4550 
-           + changeDHSH + changeSHDH
-          + chout + costch, family = binomial(link = "logit"), 
-          data = base7)
-summary(r7)
-
-r3 <- glm(formula = birth ~ plan_3 +  
-            FSI + incbracket + DH + age1519 + age2024 + age2429 + 
-            age3034 + age3539 + age4044 + age4550 
-          + changeDHSH + changeSHDH
-          + chout + costch, family = binomial(link = "logit"), 
-          data = base3)
-summary(r3)
-
-r9 <- glm(formula = birth ~ plan_9 +  
-            FSI + incbracket + DH + age1519 + age2024 + age2429 + 
-            age3034 + age3539 + age4044 + age4550 
-          + changeDHSH + changeSHDH
-          + chout + costch, family = binomial(link = "logit"), 
-          data = base5)
-summary(r9)
-
-pcoef <- plot_summs(r3, r7, scale = TRUE, plot.distributions = FALSE, 
-           model.names = c("Only plan 3", "Only plan 7"),
-           coefs = c("Plan 3" ="plan_3", "Plan 7" ="plan_7"),  
-           inner_ci_level = .9, colors = "Qual3")
-pcoef <- pcoef + theme_bw() + theme(panel.border = element_blank(), 
-                                    panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis)
-.line = element_line(colour = "black")
-
-pcoef <- pcoef + labs(x = "Coefficient estimate", y = "Variable") 
-pcoef
-
-pcoef <- pcoef + scale_color_manual(values=wes_palette(name="GrandBudapest1"))
-pcoef
 
 
