@@ -13,6 +13,8 @@ m2 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment
             data = datapp)
 stargazer(m2)
 
+
+
 #plans 5 and 7 significant 
 
 #adding marital status, so we have to erase those that have been divorced, this is datapp3 
@@ -70,6 +72,12 @@ a <- plot_coefs(m2, m6, scale = TRUE, plot.distributions = FALSE,
            inner_ci_level = .9, colors = "Qual3")
 
 
-a
 
 stargazer(m2, m6)
+
+stargazer(m2, m6, apply.coef=exp, t.auto=F, p.auto=F, report = "vct*")
+
+library(foreign)
+write.dta(datapp, "datapp.dta") 
+
+

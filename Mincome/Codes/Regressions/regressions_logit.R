@@ -9,6 +9,31 @@ library("mfx")
 library(jtools)
 library(dplyr)
 
+#function to compute marginal effects 
+
+#function to calculate marginal effects
+mfx <- function(x,sims=1000){
+  set.seed(1984)
+  pdf <- ifelse(as.character(x$call)[3]=="binomial(link = \"logit\")",
+                mean(dnorm(predict(x, type = "link"))),
+                mean(dlogis(predict(x, type = "link"))))
+  pdfsd <- ifelse(as.character(x$call)[3]=="binomial(link = \"logit\")",
+                  sd(dnorm(predict(x, type = "link"))),
+                  sd(dlogis(predict(x, type = "link"))))
+  marginal.effects <- pdf*coef(x)
+  sim <- matrix(rep(NA,sims*length(coef(x))), nrow=sims)
+  for(i in 1:length(coef(x))){
+    sim[,i] <- rnorm(sims,coef(x)[i],diag(vcov(x)^0.5)[i])
+  }
+  pdfsim <- rnorm(sims,pdf,pdfsd)
+  sim.se <- pdfsim*sim
+  res <- cbind(marginal.effects,sd(sim.se))
+  colnames(res)[2] <- "standard.error"
+  ifelse(names(x$coefficients[1])=="(Intercept)",
+         return(res[2:nrow(res),]),
+         return(res))
+}
+
 #baseline, treatment variables and stratifying variables only 
 
 reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
