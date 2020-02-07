@@ -27,15 +27,23 @@ glmermfx <- function(x,nsims=1000){
 
 #all people we had in the baseline, so 440 women, 35 years for each 
 datapp$trexp <- datapp$treated*datapp$experiment
-m1 <- glm(formula = birth ~ trexp + treated + experiment, 
+m1 <- glmer(formula = birth ~ trexp + factor(age) + (1|OID) + factor(j) + factor(year), 
             data = datapp)
 stargazer(m1)
-mfx(m1)
+glmermfx(m1)
 ggpredict(m1, "trexp")
 #not significant 
+
+m2 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
+            + plan_3*experiment + plan_4*experiment + plan_5*experiment 
+            + plan_7*experiment + plan_8*experiment + factor(age) + (1|OID) + factor(j) + factor(year), 
+            data = datapp)
+stargazer(m2)
+
+
 m2 <- glm(formula = birth ~ plan_1*experiment + plan_2*experiment 
             + plan_3*experiment + plan_4*experiment + plan_5*experiment 
-            + plan_7*experiment + plan_8*experiment, 
+            + plan_7*experiment + plan_8*experiment + factor(age) + factor(j), 
             data = datapp)
 stargazer(m2)
 mfx(m2)

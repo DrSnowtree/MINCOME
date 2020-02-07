@@ -8,7 +8,7 @@ library("margins")
 library("mfx")
 library(jtools)
 library(dplyr)
-
+library(stargazer)
 #function to compute marginal effects 
 
 #function to calculate marginal effects
@@ -72,10 +72,11 @@ reg6 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 +
               plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
               age3034 + age3539 + age4044 + age4550  +
               FSI + NumChild  + incbracket +
-              chout + if_birth9 + changeDHSH + changeSHDH + NumAdults, family = binomial(link = "logit"), data = basepay)
+              chout + if_birth9 + changeDHSH + changeSHDH + NumAdults, 
+            family = binomial(link = "logit"), data = basepay, maxit = 100)
 summary(reg6)
 
-
+nu
 #controlling for the educational level of the female householder 
 
 reg7 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
@@ -94,40 +95,50 @@ summary(reg8)
 # add changes in the household composition
 basepay$NumAdults[is.na(basepay$NumAdults)] <- 0
 
-reg9 <- glm(formula = birth ~ treated + DH + age1519 + age2024 + age2429 + 
-              age3034 + age3539 + age4044 + age4550 + FSI + NumChild  + incbracket  +
-              yrschf + costch + 
-              chout + if_birth9
-            + changeDHSH + changeSHDH
-            +femhome, family = binomial(link = "logit"), data = basepay)
+reg9 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm  +
+              chout + if_birth9 + costch + femhome + NumAdults + numvehic + valvehic + 
+              fill + totfaminc + finsch + fmotheduc + changeDHSH + changeSHDH
+            +femhome + NumAdults, family = binomial(link = "logit"), data = basepay)
+stargazer(reg9)
 effects_reg9 = margins(reg9) 
 
 effects_reg9
-
+summary(reg9)
 
 reg10 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8 + DH + age1519 + age2024 + age2429 + 
               age3034 + age3539 + age4044 + age4550  + costch + 
               FSI + NumChild  + incbracket +  yrschf +
               chout + if_birth9 + changeDHSH + changeSHDH
-             + femhome, family = binomial(link = "logit"), data = basepay)
+             + femhome + NumAdults
+             , family = binomial(link = "logit"), data = basepay)
+summary(reg10)
+
++ numvehic + valvehic  + fill + totfaminc + finsch + fmotheduc
++ mill + minsch
+mvehic, valvehic, mill, fill, totfaminc, minsch, finsch, 
+fhrspaid, mtotearn, ftotearn, mhrspaid, fmotheduc, ffathereduc
 
 effects_reg10 = margins(reg10) 
 effects_reg10 <- summary(effects_reg10)
 
 reg11 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
-               age3034 + age3539 + age4044 + age4550  + NumChild  +
-               yrschf + yrschm +  MAGE+
-               chout + if_birth9 + costch + femhome
-             , family = binomial(link = "logit"), data = basepay)
+               age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm + MAGE +
+               chout + if_birth9 + costch + femhome + NumAdults + numvehic + valvehic + 
+               fill + totfaminc + finsch + fmotheduc + mill + minsch, family = binomial(link = "logit"), data = basepay)
+summary(reg11)
+stargazer(reg11)
 effects_reg11 = margins(reg11) 
 effects_reg11 <- summary(effects_reg11)
 
 reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
                plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
                age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm + MAGE +
-               chout + if_birth9 + costch + femhome, 
+               chout + if_birth9 + costch + femhome + NumAdults + numvehic + valvehic + 
+               fill + totfaminc + finsch + fmotheduc + mill + minsch, 
              family = binomial(link = "logit"), data = basepay)
+stargazer(reg12)
 effects_reg12 = margins(reg12) 
 effects_reg12 <- summary(effects_reg12)
 
