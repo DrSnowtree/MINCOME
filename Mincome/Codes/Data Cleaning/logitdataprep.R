@@ -1,6 +1,3 @@
-setwd("W:/WU/Projekte/mincome/Mincome/Data")
-
-
 library("haven")
 library("dplyr")
 library("tidyr") 
@@ -24,11 +21,9 @@ library(survival)
 library(pltesim)
 library(informR)
 library(frailtypack)
-library(compareGroups)
-library("xtable")
 
 
-basepaypanel <- read_dta("basepaypanel_revised.dta")
+basepaypanel <- read_dta("Downloads/basepaypanel_revised.dta")
 basepaypanel[basepaypanel == -9] <- NA
 basepaypanel[basepaypanel == -7] <- NA
 basepaypanel[basepaypanel == -1] <- NA
@@ -36,27 +31,9 @@ basepaypanel[basepaypanel == "."] <- NA
 basepaypanel$individual <- 0 
 basepaypanel$individual[basepaypanel$DoubleHead1== 0 & basepaypanel$SingleHead1 == 0] <- 1
 
-
-
 #only have Winnipeg 
 
 basepaypanel <- basepaypanel[which(basepaypanel$SiteCode == 1),]
-
-#CP and CQ give information on DH and SH after the baseline interview
-#we can have a new variable that indicates if there are changes from DH to SH, 
-#and from SH to DH 
-
-basepaypanel$changehead <- 0 
-basepaypanel$changehead[basepaypanel$DoubleHead1 != basepaypanel$CP 
-                        | basepaypanel$SingleHead1 != basepaypanel$CQ] <- 1
-
-basepaypanel$changeDHSH <- 0 
-basepaypanel$changeDHSH[basepaypanel$changehead == 1 
-                        & basepaypanel$CQ  == 1] <- 1
-basepaypanel$changeSHDH <- 0
-basepaypanel$changeSHDH[basepaypanel$changehead == 1 
-                       & basepaypanel$CP  == 1] <- 1
-
 
 basepaypanel <- basepaypanel %>%
   group_by(FamNum) %>%
@@ -89,14 +66,14 @@ basepaypanel <- basepaypanel %>%
   arrange(FamNum, month)
 
 #exclude those that experienced birth within the first nine months of the experiement 
-basepaypanel$firstnine <- 0
-basepaypanel$firstnine[basepaypanel$month1 < 9] <- 1
+basepaypanel$increase[basepaypanel$month1 < 9] <- 0
 
 #CR and CS give the male and female householders´ age, also for households that were missing 
 #at the beginning of the experiment 
 
 basepaypanel$mage<- basepaypanel$CR
 basepaypanel$fage<- basepaypanel$CS
+
 faminfo <- subset(basepaypanel, select=c("FamNum","FSI", "FS", "month1", "mage", "fage", "AC"))
 faminfo <- faminfo[which(faminfo$month1 ==1),]
 faminfo <- faminfo %>% rename(FAMSI=FSI)
@@ -117,21 +94,6 @@ for (i in levels(basepaypanel$FamNum)){
 
 basepaypanel$if_increase = 0   
 basepaypanel$if_increase[basepaypanel$sum != 0] <- 1
-
-#another dummy if the increase has been during the first nine months
-basepaypanel$increase9 = basepaypanel$increase*basepaypanel$firstnine
-#increase9 1 if the increase was in the first nine months
-#top is bigger than 0 if birth has happened within first nine months
-basepaypanel$top = 0
-basepaypanel$FamNum <- as.factor(basepaypanel$FamNum)
-for (i in levels(basepaypanel$FamNum)){
-  s <- sum(basepaypanel[basepaypanel$FamNum == i, "increase9"])
-  basepaypanel$top[basepaypanel$FamNum == i] <- s
-}
-#if_increase 9 is 1 if the birth was in first nine months 
-basepaypanel$if_increase9 = 0   
-basepaypanel$if_increase9[basepaypanel$top != 0] <- 1
-
 
 #Plan 6 was merged with plan 7 at some point
 basepaypanel$plan[basepaypanel$plan == 6] <- 7
@@ -185,23 +147,20 @@ basepaypanel_rem <- basepaypanel_rem[which(basepaypanel_rem$if_change == 0),]
 basepaypanel_rem$plan <- as.numeric(as.character(basepaypanel_rem$plan))
 basepaypanel_rem$control <- as.numeric(as.character(basepaypanel_rem$control))
 basepaypanel_rem$if_increase <- as.numeric(as.character(basepaypanel_rem$if_increase))
-basepaypanel_rem$if_increase9 <- as.numeric(as.character(basepaypanel_rem$if_increase9))
 basepaypanel_rem$MAGE <- as.numeric(as.character(basepaypanel_rem$MAGE))
 basepaypanel_rem$FAGE <- as.numeric(as.character(basepaypanel_rem$FAGE))
 basepaypanel_rem$DoubleHead1 <- as.numeric(as.character(basepaypanel_rem$DoubleHead1))
 basepaypanel_rem$individual <- as.numeric(as.character(basepaypanel_rem$individual))
 basepaypanel_rem$SingleHead1 <- as.numeric(as.character(basepaypanel_rem$SingleHead1))
 basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
-basepaypanel_rem$changeDHSH <- as.numeric(as.character(basepaypanel_rem$changeDHSH))
-basepaypanel_rem$changeSHDH <- as.numeric(as.character(basepaypanel_rem$changeSHDH))
+basepaypanel_rem$asscell <- as.numeric(as.character(basepaypanel_rem$asscell))
 
 
 basepay <- basepaypanel_rem %>%
   group_by(FamNum)%>%
-  summarise(if_birth=mean(if_increase), 
-            if_birth9=mean(if_increase9), control = mean(control), plan =mean(plan), 
+  summarise(if_birth=mean(if_increase), control = mean(control), plan =mean(plan), 
             MAGE = mean(MAGE), FAGE = mean(FAGE), DH = mean(DoubleHead1), individual = mean(individual), 
-            SH =mean(SingleHead1), AC = mean(asscell), changeDHSH = mean(changeDHSH), changeSHDH = mean(changeSHDH)) %>% 
+            SH =mean(SingleHead1), AC = mean(asscell)) %>% 
   ungroup()
 
  
@@ -213,14 +172,14 @@ bpinfo <- basepaypanel_rem %>%
   ungroup()
 
 bpinfo <- bpinfo %>%
-  dplyr::select(FamSize, FamSizex100, FamNum, NumAdults, NumChild)
+  dplyr::select(FamSize, FamSizex100, FamNum, NumChild)
 
 basepay <- merge(basepay, bpinfo, by = "FamNum", all = TRUE)
 basepay$treated <- 0 
 basepay$treated[basepay$control == 0] <- 1
 
-#if we want to exclude households with only males 
-#basepay <- basepay[-which(is.na(basepay$FAGE)), ]
+#we want to exclude households with only males 
+basepay <- basepay[-which(is.na(basepay$FAGE)), ]
 
 names(basepay)[names(basepay) == 'FAGE'] <- "age"
 basepay <- fastDummies::dummy_columns(basepay, select_columns = "age")
@@ -263,8 +222,8 @@ basepay$age4550[basepay$age == 45 | basepay$age == 46 | basepay$age == 47 |
 basepay$age50plus <- 0 
 basepay$age50plus[basepay$age > 50 ] <- 1 
 names(basepay)[names(basepay) == 'FamSizex100'] <- "FSI"
+names(basepay)[names(basepay) == 'NumChild'] <- "chnr"
 names(basepay)[names(basepay) == 'TotFamInc74'] <- "TotInc74"
-
 basepay$TotInc74 <- as.numeric(basepay$TotInc74)
 basepay$age <- as.factor(basepay$age)
 basepay$rate <- 0
@@ -278,7 +237,7 @@ basepay$guarantee[basepay$plan == 1 |basepay$plan == 3 ] <- 3800
 basepay$guarantee[basepay$plan == 2 |basepay$plan == 4 | basepay$plan == 7] <- 4800
 basepay$guarantee[basepay$plan == 5 |basepay$plan == 8 ] <- 5480
 
-familydata <- read_excel("familydata.xlsx")
+familydata <- read_excel("Downloads/familydata.xlsx")
 
 familydata <- familydata %>%
   dplyr::select("FamNum", "chout")
@@ -314,117 +273,15 @@ basepay$AC <- as.character(basepay$AC)
 basepay$incbracket <- substr(basepay$AC, 2, 3)
 basepay$incbracket <- as.factor(basepay$incbracket)
 
+length(which(base_pay_data_revised_Dec_11_2019$`Site Code`==1))
 
-basepay_rev <- read_excel("base_pay.data_revised_Dec 11, 2019.xlsx")
-basepay_rev[basepay_rev == -9] <- NA
-basepay_rev[basepay_rev == -7] <- NA
-basepay_rev[basepay_rev == -1] <- NA
-basepay_rev[basepay_rev == "."] <- NA
-names(basepay_rev)
+basepay <- `basepay-2`
+basepayfam <- basepay %>% select(FAMNUM, treated)
 
-basepay_rev <- basepay_rev  %>%
-dplyr::select(FAMNUM, highschf, highschm, yrschm, yrschf, "Child care cost...74")
-basepay$FAMNUM <- basepay$FamNum
-basepay <- merge(basepay_rev, basepay, by = "FAMNUM")
-basepay$highschf <- as.factor(basepay$highschf)
-basepay$highschm <- as.factor(basepay$highschm)
-basepay$yrschm <- as.numeric(basepay$yrschm)
-basepay$yrschf <- as.numeric(basepay$yrschf)
+bp <- read_excel("Downloads/bp.xlsx")
 
-basepay <- basepay[-which(is.na(basepay$age)), ]
+bp$FAMNUM <- as.character(bp$FAMNUM)
 
-#birth becomes 1 if there has been an increase in the number of children
-#except in the first nine months 
-basepay$birth <- 1 
-basepay$birth[basepay$if_birth == 0] <- 0 
-basepay$birth[basepay$if_birth9 == 1] <- 0
-
-basepay$birth  <- as.numeric(as.character(basepay$birth ))
-basepay$incbracket <-  as.factor(basepay$incbracket) 
-basepay$guarantee <-  as.factor(basepay$guarantee) 
-basepay$rate <-  as.factor(basepay$rate) 
-
-#get information on expected or actual childcare cost 
-basepay <- basepay %>%  rename(
-  costch = "Child care cost...74")
-basepay$costch <- as.numeric(basepay$costch)
-
-
-#actual payments 
-
-basepaypanel_revised <- read_dta("W:/WU/Projekte/mincome/Mincome/Data/raw or not complete data/basepaypanel_revised.dta")
-basepaypanel_revised <- basepaypanel_revised[which(basepaypanel_revised$SiteCode ==1), ]
-basepaypanel_revised <- basepaypanel_revised[, c(1,2, 118)]
-basepaypanel_revised$PA <- as.numeric(as.character(basepaypanel_revised$PA))
-basepaypanel_revised$PA[basepaypanel_revised$PA == -1] <- 0 
-basepaypanel_revised$totpay <- 0
-
-
-basepaypanel_revised <- basepaypanel_revised %>% 
-  group_by(FamNum) %>% 
-  summarise(totpay = sum(PA))%>%
-  ungroup()
-basepay <- merge(basepay, basepaypanel_revised, by ="FamNum", all = FALSE)
-
-
-basepay$g1 <- 0
-basepay$g1[basepay$plan == 2 | basepay$plan == 5] <- 1
-
-basepay$g2 <- 0
-basepay$g2[basepay$plan == 1 | basepay$plan == 4 | basepay$plan == 8] <- 1
-
-basepay$g3 <- 0
-basepay$g3[basepay$plan == 3 | basepay$plan == 7] <- 1
-
-basepaypanel_revised <- readRDS("W:/WU/Projekte/mincome/Mincome/Data/raw or not complete data/basepaypanel_revised.rds")
-
-basepaypanel_revised <- basepaypanel_revised[which(basepaypanel_revised$month1 == 1), ]
-basepayAC <- basepaypanel_revised[, c(1, 111)]
-basepayAC$AC <- as.character(basepayAC$AC)
-basepayAC$firstplan <- substr(basepayAC$AC, 1, 1)
-
-basepay <- merge(basepay, basepayAC, by = "FamNum", all = F)
-
-basepay <- basepay %>% 
-  group_by(firstplan) %>% 
-  mutate(meanpay = mean(totpay))%>%
-  ungroup()
-
-
-labpartinfo <- base_pay_data_revised_Dec_11_2019 %>%
-  dplyr::select ("FAMNUM", "lappartmale", "lappartfemale")
-basepay <- merge(labpartinfo, basepay, by = "FAMNUM", all= FALSE)
-basepay[basepay == -9] <- NA
-
-
-#bothlab is a dummy indicating that both householders are working, femlab is  a single woman 
-#working, and femhome is 1 when a male householder is working, and the woman is not 
-
-basepay$bothlab <- 0
-
-basepay$bothlab <- ifelse(!is.na(basepay$lappartfemale) & !is.na(basepay$lappartmale)
-                          & basepay$lappartfemale == 1 & basepay$lappartmale == 1, 1, basepay$bothlab)
-basepay$femlab <- 0
-basepay$femlab <- ifelse(!is.na(basepay$lappartfemale) & is.na(basepay$lappartmale)
-                         & basepay$lappartfemale == 1, 1, basepay$femlab)
-
-
-basepay$femhome <- 0
-basepay$femhome <- ifelse(!is.na(basepay$lappartfemale) & !is.na(basepay$lappartmale)
-                          & basepay$lappartfemale == 0 & basepay$lappartmale == 1, 1, basepay$femhome)
-
-
-basepay$bothlab <- as.factor(basepay$bothlab)
-basepay$femlab <- as.factor(basepay$femlab)
-basepay$femhome <- as.factor(basepay$femhome)
-basepay$costch <- as.numeric(basepay$costch)
-saveRDS(basepay, "basepay.rds")
-
-
-library(foreign)
-write.dta(basepay, "basepay.dta") 
-
-bp <- read_excel("W:/WU/Projekte/mincome/Mincome/Data/raw or not complete data/bp.xlsx")
 basepaycomp <- merge(basepayfam, bp, by = "FAMNUM", all = F)
 basepaycomp$individual <- 0 
 basepaycomp$individual[basepaycomp$`Double Head = 1...4`== 0 & basepaycomp$`Single Head = 1...5` == 0] <- 1
@@ -433,10 +290,8 @@ basepaycomp[basepaycomp == -9] <- NA
 basepaycomp[basepaycomp == -7] <- NA
 basepaycomp[basepaycomp == -1] <- NA
 basepaycomp[basepaycomp == "."] <- NA
-
 basepaycomp <- as.data.frame(sapply(basepaycomp, as.factor))
 
-basepaycomp$FAMNUM <- as.numeric(as.character(basepaycomp$FAMNUM))
 basepaycomp$`Age Male Head...95` <- as.numeric(as.character(basepaycomp$`Age Male Head...95`))
 basepaycomp$`Age Female Head...96` <- as.numeric(as.character(basepaycomp$`Age Female Head...96`))
 basepaycomp$`Home Val` <- as.numeric(as.character(basepaycomp$`Home Val`))
@@ -484,10 +339,11 @@ basepaycomp$ `fNum Job`<- as.numeric(as.character(basepaycomp$ `fNum Job`))
 basepaycomp <- basepaycomp %>% rename(numvehic = `Num Vehic`, 
                                       valvehic = `Val Vehic`, 
                                       totfaminc = `Tot Fam Inc 74`, 
-                                      fhrspaid = `fHours P  x10`, mtotearn = `mTot Earn`, ftotearn= `fTot Earn`)
+                                      fhrspaid = `fHours P  x10`, mtotearn = `mTot Earn`, ftotearn= `fTot Earn`,
+                                      hmown = `Home Own`)
 
 
 
 basepaycomp <- basepaycomp %>% select (FAMNUM, numvehic, valvehic, mill, fill, totfaminc, minsch, finsch, 
-                                      fhrspaid, mtotearn, ftotearn, mhrspaid, fmotheduc, ffathereduc)
+                                       fhrspaid, mtotearn, ftotearn, mhrspaid, fmotheduc, ffathereduc) 
 basepay <- merge(basepay, basepaycomp, by = "FAMNUM")
