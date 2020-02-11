@@ -232,4 +232,112 @@ boxplot(base1$age)
 
 
 
+basepay$if_birth[basepay$FAMNUM == 14324] <- 0 
+basepay$costch <- as.numeric(basepay$costch)
+saveRDS(basepay, "basepay.rds")
+
+#function to compute marginal effects 
+
+#function to calculate marginal effects
+mfx <- function(x,sims=1000){
+  set.seed(1984)
+  pdf <- ifelse(as.character(x$call)[3]=="binomial(link = \"logit\")",
+                mean(dnorm(predict(x, type = "link"))),
+                mean(dlogis(predict(x, type = "link"))))
+  pdfsd <- ifelse(as.character(x$call)[3]=="binomial(link = \"logit\")",
+                  sd(dnorm(predict(x, type = "link"))),
+                  sd(dlogis(predict(x, type = "link"))))
+  marginal.effects <- pdf*coef(x)
+  sim <- matrix(rep(NA,sims*length(coef(x))), nrow=sims)
+  for(i in 1:length(coef(x))){
+    sim[,i] <- rnorm(sims,coef(x)[i],diag(vcov(x)^0.5)[i])
+  }
+  pdfsim <- rnorm(sims,pdf,pdfsd)
+  sim.se <- pdfsim*sim
+  res <- cbind(marginal.effects,sd(sim.se))
+  colnames(res)[2] <- "standard.error"
+  ifelse(names(x$coefficients[1])=="(Intercept)",
+         return(res[2:nrow(res),]),
+         return(res))
+}
+
+
+class(basepay$if_birth9)
+basepay$DH <- as.factor(basepay$DH)
+basepay$DH <- as.factor(basepay$if_birth9)
+basepay$changeDHSH <- as.factor(basepay$changeDHSH)
+basepay$changeSHDH <- as.factor(basepay$changeSHDH)
+basepay$femhome <- as.factor(basepay$femhome)
+basepay$numvehic <- as.numeric(as.character(basepay$numvehic))
+basepay$NumAdults <- as.numeric(as.character(basepay$NumAdults))
+basepay$fill <- as.factor(as.character(basepay$fill))
+basepay$finsch <- as.factor(as.character(basepay$finsch))
+basepay$mill <- as.factor(as.character(basepay$mill))
+basepay$if_birth9 <- as.factor(as.character(basepay$if_birth9))
+basepay$finsch[basepay$finsch == 2] <- 0
+
+
+reg1 <- glm(formula = birth ~ treated + NumChild + DH
+            + incbracket + FSI, family = binomial(link = "logit"), data = basepay)
+summary(reg1)
+stargazer(reg1)
+
+reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+              plan_5 + plan_7 + plan_8 + NumChild + DH
+            + incbracket + FSI, family = binomial(link = "logit"), data = basepay)
+summary(reg2)
+stargazer(reg1)
+
+reg3 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+              plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf  +
+              chout + if_birth9 + costch + femhome + NumAdults + numvehic  + 
+              fill + ftotearn + finsch + fmotheduc + changeSHDH + changeDHSH
+            + incbracket + FSI, 
+            family = binomial(link = "logit"), 
+              data = basepay)
+stargazer(reg3)
+
+class(basepay$yrschm)
+
+reg3 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf  +
+              chout + if_birth9 + costch + femhome + NumAdults + numvehic  + 
+              fill + ftotearn + finsch + fmotheduc + incbracket + FSI, 
+            family = binomial(link = "logit"), data = basepay)
+
+stargazer(reg3)
+
+reg4 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+              plan_5 + plan_7 + plan_8 +age1519 + age2024 + age2429 + 
+              age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf  +
+              chout + if_birth9 + costch + femhome + NumAdults + numvehic  + 
+              fill  + finsch + fmotheduc + incbracket + FSI, 
+             family = binomial(link = "logit"), 
+              data = basepay)
+stargazer(reg4)
+
+
+reg12 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
+               plan_5 + plan_7 + plan_8 + age1519 + age2024 + age2429 + 
+               age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm 
+               + MAGE + if_birth9  + 
+               chout  + costch + femhome + NumAdults + numvehic + valvehic + 
+               fill + finsch + fmotheduc + mill + minsch, 
+             family = binomial(link = "logit"), data = basepay)
+
+stargazer(reg12)
+
+
+reg13 <- glm(formula = birth ~ treated + age1519 + age2024 + age2429 + 
+               age3034 + age3539 + age4044 + age4550 + NumChild  +  yrschf + yrschm  + MAGE +
+               chout + if_birth9 + costch + femhome + NumAdults + numvehic + valvehic + 
+               fill  + finsch + fmotheduc + mill + minsch, 
+             family = binomial(link = "logit"), data = basepay)
+
+stargazer(reg13)
+
+
+#do a baseline with 440, controls for women for 322, and then married households with all the variables
+#then event history 
 
