@@ -16,11 +16,7 @@ library("Hmisc")
 library("readxl")
 library("naniar")
 library("strex")
-library(devtools)
-library(survival)
-library(pltesim)
-library(informR)
-library(frailtypack)
+
 
 
 basepaypanel <- read_dta("Downloads/basepaypanel_revised.dta")
@@ -275,10 +271,10 @@ basepay$incbracket <- as.factor(basepay$incbracket)
 
 length(which(base_pay_data_revised_Dec_11_2019$`Site Code`==1))
 
-basepay <- `basepay-2`
-basepayfam <- basepay %>% select(FAMNUM, treated)
 
-bp <- read_excel("Downloads/bp.xlsx")
+basepayfam <- basepay %>% dplyr::select(FAMNUM, treated)
+
+bp <- read_excel("bp.xlsx")
 
 bp$FAMNUM <- as.character(bp$FAMNUM)
 
@@ -345,5 +341,30 @@ basepaycomp <- basepaycomp %>% rename(numvehic = `Num Vehic`,
 
 
 basepaycomp <- basepaycomp %>% select (FAMNUM, numvehic, valvehic, mill, fill, totfaminc, minsch, finsch, 
-                                       fhrspaid, mtotearn, ftotearn, mhrspaid, fmotheduc, ffathereduc) 
+                                       fhrspaid, mtotearn, ftotearn, mhrspaid, fmotheduc, ffathereduc, hmown) 
 basepay <- merge(basepay, basepaycomp, by = "FAMNUM")
+
+basepay$valvehic[is.na(basepay$valvehic)] <- 0
+
+
+
+basepay$mill <- as.factor(basepay$mill)
+basepay$fill <- as.factor(basepay$fill)
+basepay$minsch<- as.factor(basepay$minsch)
+basepay$finsch<- as.factor(basepay$finsch)
+basepay$if_birth9<- as.factor(basepay$if_birth9)
+basepay$birth<- as.factor(basepay$birth)
+basepay$changeDHSH<- as.factor(basepay$changeDHSH)
+basepay$changeSHDH<- as.factor(basepay$changeSHDH)
+basepay$hmown<- as.factor(basepay$hmown)
+basepay$NumAdults<- as.numeric(as.character(basepay$NumAdults))
+basepay$fmotheduc <- as.numeric(as.character(basepay$fmotheduc))
+
+basepay <- basepay[which(!is.na(basepay$fill)), ]
+
+mean(basepay$yrschf[basepay$highschf == 2], na.rm = TRUE)
+basepay$yrschf[is.na(basepay$yrschf)] <- 8 
+
+
+library(foreign)
+write.dta(basepay, "basepay.dta") 

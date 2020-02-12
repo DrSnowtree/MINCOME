@@ -36,10 +36,9 @@ mfx <- function(x,sims=1000){
 
 #baseline, treatment variables and stratifying variables only 
 
-reg1 <- glm(formula = birth ~ treated + FSI + incbracket 
-            , family = binomial(link = "logit"), data = basepay)
+reg1 <- glm(formula = birth ~ treated + FSI + incbracket, family = binomial(link = "logit"), data = basepay)
 
-
+stargazer(reg1)
 reg2 <- glm(formula = birth ~ plan_1 + plan_2 + plan_3 + plan_4 + 
               plan_5 + plan_7 + plan_8 + 
               FSI + incbracket, family = binomial(link = "logit"), data = basepay)
@@ -189,8 +188,7 @@ plot_summs(reg1, reg9, reg11,  scale = TRUE, plot.distributions = FALSE,
 stargazer(reg1, reg2, reg9, reg10, reg11, reg12, apply.coef=exp, t.auto=F, p.auto=F, report = "vct*")
 
 
-plot_summs(reg2, reg4, scale = TRUE, plot.distributions = FALSE, 
-           model.names = c("Without controls", "With controls"),
+plot_summs(reg2, scale = TRUE, plot.distributions = FALSE,
            coefs = c("Plan 1" = "plan_1","Plan 2" = "plan_2", "Plan 3" =
                        "plan_3",  
                      "Plan 4" ="plan_4", 
