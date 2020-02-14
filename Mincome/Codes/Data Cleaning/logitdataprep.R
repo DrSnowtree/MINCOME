@@ -403,4 +403,13 @@ basepay$plan_9 <- as.factor(basepay$plan_9)
 
 basepay$if_birth[basepay$FAMNUM == 14324] <- 0 
 basepay$costch <- as.numeric(basepay$costch)
+
+basepay$edlevelmoth <- 0
+basepay$edlevelmoth[basepay$fmotheduc < 9] <- 1
+basepay$edlevelmoth[basepay$fmotheduc > 9] <- 2
+basepay$edlevelmoth[is.na(basepay$fmotheduc)] <- NA
+
+
+
 saveRDS(basepay, "basepay.rds")
+

@@ -1,10 +1,10 @@
+
 setwd("W:/WU/Projekte/mincome/Mincome/Data")
 library("lme4")
 library("stargazer")
-library(sjPlot)
-library(margins)
-install.packages("devtools")
-
+library("ggstance")
+library("jtools")
+library("coefplot")
 
 #all people we had in the baseline, so 440 women, 35 years for each 
 
@@ -36,8 +36,16 @@ m1 <- lmer(formula = birth ~ treated + experiment + treated_exp + factor(age) + 
 dydx(m1, data= datapp, variable = "treated")
 
 
+#all people we had in the baseline, so 440 women, 35 years for each p)
+
+
+m1 <- glmer(formula = birth ~ treated*experiment + factor(age) + (1|OID) + factor(j) + factor(year), 
+            data = datapp)
+
 stargazer(m1)
+
 #not significant 
+
 
 m2 <- lmer(formula = birth ~ plan_1 + plan_2 
             + plan_3 + plan_4 + plan_5 
@@ -48,64 +56,41 @@ m2 <- lmer(formula = birth ~ plan_1 + plan_2
 stargazer(m2)
 margins(m2, data = datapp, allow.new.levels=TRUE)
 
+
+
 #plans 5 and 7 significant 
 
-#adding marital status, so we have to erase those that have been divorced, this is datapp3 
-
-m3 <- glmer(formula = birth ~ treated*experiment + factor(age) + (1|OID) + factor(j) + factor(year)
-            + married, 
-            data = datapp3)
-stargazer(m3)
-
-m4 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
-             + plan_3*experiment + plan_4*experiment + plan_5*experiment 
-             + plan_7*experiment + plan_8*experiment + factor(age) + (1|OID) + factor(j) + factor(year)
-             + married, 
-             data = datapp3)
-stargazer(m3)
-
-#plan 7 significant 
+##now only with women born after 1934 and never been divorced before 
 
 
-
-##now only with women born after 1934, as before, the childbirth history might suffer from 
-#left trunctuation
-
-m5 <- glmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
-             + plan_3*experiment + plan_4*experiment + plan_5*experiment 
-             + plan_7*experiment + plan_8*experiment + 
-              factor(age) + (1|OID) + factor(year) + factor(j), 
-             data = datapp1)
-stargazer(m5)
-
-
-#Plans 3 and 7 positive and significant (without the parity dummy, plan 1 also significant, but not 3 and 7)
-
-
-#with married dummy, removing divorced women 
-
-m6 <- lmer(formula = birth ~ plan_1 + plan_2 
-           + plan_3 + plan_4 + plan_5 
-           + plan_7 + plan_8 + experiment + p1exp + p2exp + p3exp + p4exp + p5exp + p7exp + p8exp + factor(age) 
+m3 <- glmer(formula = birth ~ treated*experiment + factor(age) 
             + (1|OID) + factor(year) + factor(j) + married, 
             data = datapp2)
-stargazer(m6)
+stargazer(m3)
 
-margins(m6, data= datapp, allow.new.levels=TRUE)
+          
+m4 <- lmer(formula = birth ~ plan_1 + plan_2 
+            + plan_3 + plan_4 + plan_5
+            + plan_7 + plan_8 + experiment + p1exp
+            + p2exp + p3exp + p4exp + p5exp + p7exp + p8exp + factor(age) 
+            + (1|OID) + factor(year) + factor(j) + married, 
+            data = datapp2)
+stargazer(m4)
 
-#3 and 7 are significant 
+a <- plot_coefs (m2, m4, model.names = c("All", "Restricted sample"), 
+                coefs = c("Plan 1" = "p1exp","Plan 2" = "p2exp", "Plan 3" =
+                            "p3exp",  
+                          "Plan 4" ="p4exp", 
+                          "Plan 5" ="p5exp", 
+                          "Plan 7" ="p7exp", 
+                          "Plan 8" ="p8exp"), 
+                level = 0.05, colors = "Qual3")
 
-sjp.glmer(m2, type = "eff")
+a
 
-stargazer(m2, m6)
+stargazer(m2, m4)
 
-stargazer(m2, m6, apply.coef=exp, t.auto=F, p.auto=F, report = "vct*")
 
-library(foreign)
-write.dta(datapp, "datapp.dta") 
-
-m <- margins(m1, data = datapp)
-m
 
 
 

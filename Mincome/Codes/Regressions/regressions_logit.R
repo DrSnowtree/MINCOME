@@ -1,7 +1,4 @@
 
-basepay$if_birth[basepay$FAMNUM == 14324] <- 0 
-basepay$costch <- as.numeric(basepay$costch)
-saveRDS(basepay, "basepay.rds")
 library("glm2")
 library("oddsratio")
 library("margins")
