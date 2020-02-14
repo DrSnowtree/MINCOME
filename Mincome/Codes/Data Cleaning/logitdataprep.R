@@ -366,5 +366,41 @@ mean(basepay$yrschf[basepay$highschf == 2], na.rm = TRUE)
 basepay$yrschf[is.na(basepay$yrschf)] <- 8 
 
 
-library(foreign)
-write.dta(basepay, "basepay.dta") 
+basepay$yrschf <- 0
+basepay$yrschf[basepay$highschf == 1 & basepay$yrschf < 13] <- 1
+basepay$yrschf[basepay$highschf == 1 & basepay$yrschf > 12] <- 2
+
+
+basepay$fmotheduc <- 0
+basepay$fmotheduc[basepay$highschm == 1 & basepay$yrschm < 13] <- 1
+basepay$fmotheduc[basepay$highschm == 1 & basepay$yrschm > 12] <- 2
+
+basepay$fmotheducoth <- 0
+basepay$fmotheducoth[basepay$fmotheduc < 13 & basepay$fmotheduc > 8] <- 1
+basepay$fmotheducoth[basepay$fmotheduc > 12] <- 2
+basepay$fmotheducoth[is.na(basepay$fmotheduc)] <- NA
+
+
+basepay$DH <- as.factor(basepay$DH)
+basepay$age1519 <- as.factor(basepay$age1519)
+basepay$age2024 <- as.factor(basepay$age2024)
+basepay$age2429 <- as.factor(basepay$age2429)
+basepay$age3034 <- as.factor(basepay$age3034)
+basepay$age3539 <- as.factor(basepay$age3539)
+basepay$age4044 <- as.factor(basepay$age4044)
+basepay$age4550 <- as.factor(basepay$age4550)
+basepay$age50plus <- as.factor(basepay$age50plus)
+basepay$femhome <- as.factor(basepay$femhome)
+basepay$plan_1 <- as.factor(basepay$plan_1)
+basepay$plan_2 <- as.factor(basepay$plan_2)
+basepay$plan_3 <- as.factor(basepay$plan_3)
+basepay$plan_4 <- as.factor(basepay$plan_4)
+basepay$plan_5 <- as.factor(basepay$plan_5)
+basepay$plan_7 <- as.factor(basepay$plan_7)
+basepay$plan_8 <- as.factor(basepay$plan_8)
+basepay$plan_9 <- as.factor(basepay$plan_9)
+
+
+basepay$if_birth[basepay$FAMNUM == 14324] <- 0 
+basepay$costch <- as.numeric(basepay$costch)
+saveRDS(basepay, "basepay.rds")
