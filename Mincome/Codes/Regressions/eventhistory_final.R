@@ -5,92 +5,96 @@ library("stargazer")
 library("ggstance")
 library("jtools")
 library("coefplot")
+library(dplyr)
 
-#all people we had in the baseline, so 440 women, 35 years for each 
+#remove the 5 women not included in the baseline analysis
 
-datapp$treated_exp = datapp$treated*datapp$experiment
-datapp$p7exp = datapp$plan_7*datapp$experiment
-datapp$p1exp = datapp$plan_1*datapp$experiment
-datapp$p2exp = datapp$plan_2*datapp$experiment
-datapp$p3exp = datapp$plan_3*datapp$experiment
-datapp$p4exp = datapp$plan_4*datapp$experiment
-datapp$p5exp = datapp$plan_5*datapp$experiment
-datapp$p8exp = datapp$plan_8*datapp$experiment
-datapp$p9exp = datapp$plan_9*datapp$experiment
+bpid <- basepay[, 1]
+bpid <- as.data.frame(bpid)
+
+bpid <- bpid %>% rename(FAMNUM=bpid)
 
 
-datapp2$treated_exp = datapp2$treated*datapp2$experiment
-datapp2$p7exp = datapp2$plan_7*datapp2$experiment
-datapp2$p1exp = datapp2$plan_1*datapp2$experiment
-datapp2$p2exp = datapp2$plan_2*datapp2$experiment
-datapp2$p3exp = datapp2$plan_3*datapp2$experiment
-datapp2$p4exp = datapp2$plan_4*datapp2$experiment
-datapp2$p5exp = datapp2$plan_5*datapp2$experiment
-datapp2$p8exp = datapp2$plan_8*datapp2$experiment
-datapp2$p9exp = datapp2$plan_9*datapp2$experiment
+# only with women born after 1934 and never been divorced before 
 
+datapp2 <- merge(datapp2, bpid, by = "FAMNUM", all = F)
+datapp2$treated <- 1
+datapp2$treated[datapp2$plan == 9] <- 0
 
-m1 <- lmer(formula = birth ~ treated + experiment + treated_exp + factor(age) + (1|OID) + factor(j) + factor(year), 
-             data = datapp)
-
-dydx(m1, data= datapp, variable = "treated")
-
-
-#all people we had in the baseline, so 440 women, 35 years for each p)
-
-
-m1 <- glmer(formula = birth ~ treated*experiment + factor(age) + (1|OID) + factor(j) + factor(year), 
-            data = datapp)
-
+m1 <- glmer(formula = birth ~ treated*experiment + factor(age) 
+            + (1|OID) + factor(year) + factor(j) + married, 
+            data = datapp2)
 stargazer(m1)
 
-#not significant 
-
-
-m2 <- lmer(formula = birth ~ plan_1 + plan_2 
-            + plan_3 + plan_4 + plan_5 
-            + plan_7 + plan_8 + experiment + p1exp + p2exp + p3exp + p4exp + p5exp + p7exp + p8exp + 
-            +  factor(age) + (1|OID) 
-             + factor(j),  
-            data = datapp)
+          
+m2 <- lmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
+           + plan_3*experiment + plan_4*experiment + plan_5*experiment 
+           + plan_7*experiment + plan_8*experiment + factor(age) 
+            + (1|OID) + factor(year) + factor(j) + married, 
+            data = datapp2)
 stargazer(m2)
-margins(m2, data = datapp, allow.new.levels=TRUE)
+
+saveRDS(datapp2, "datapp2.rds")
 
 
+##look only at married couples 
 
-#plans 5 and 7 significant 
+bp2 <- basepay[which(!is.na(basepay$MAGE)), ]
+bp2 <- bp2[which(!is.na(bp2$yrschm)), ]
+bpid2 <- bp2[, 1]
 
-##now only with women born after 1934 and never been divorced before 
+bpid2 <- as.data.frame(bpid2)
 
+bpid2 <- bpid2 %>% rename(FAMNUM=bpid2)
+
+datapp4 <- merge(datapp2, bpid2, by = "FAMNUM", all = F)
+
+datapp4$treated <- 1
+datapp4$treated[datapp4$plan == 9] <- 0
 
 m3 <- glmer(formula = birth ~ treated*experiment + factor(age) 
-            + (1|OID) + factor(year) + factor(j) + married, 
-            data = datapp2)
+            + (1|OID) + factor(year) + factor(j) + factor(married), 
+            data = datapp4)
 stargazer(m3)
 
-          
-m4 <- lmer(formula = birth ~ plan_1 + plan_2 
-            + plan_3 + plan_4 + plan_5
-            + plan_7 + plan_8 + experiment + p1exp
-            + p2exp + p3exp + p4exp + p5exp + p7exp + p8exp + factor(age) 
-            + (1|OID) + factor(year) + factor(j) + married, 
-            data = datapp2)
+
+m4 <- lmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
+           + plan_3*experiment + plan_4*experiment + plan_5*experiment 
+           + plan_7*experiment + plan_8*experiment + factor(age) 
+           + (1|OID) + factor(year) + factor(j) + factor(married), 
+           data = datapp4)
 stargazer(m4)
 
-a <- plot_coefs (m2, m4, model.names = c("All", "Restricted sample"), 
-                coefs = c("Plan 1" = "p1exp","Plan 2" = "p2exp", "Plan 3" =
-                            "p3exp",  
-                          "Plan 4" ="p4exp", 
-                          "Plan 5" ="p5exp", 
-                          "Plan 7" ="p7exp", 
-                          "Plan 8" ="p8exp"), 
-                level = 0.05, colors = "Qual3")
 
-a
+saveRDS(datapp4, "datapp4.rds")
 
-stargazer(m2, m4)
+##third set of people 
 
+bp3 <- bp2[which(!is.na(bp2$fmotheduc)), ]
+bpid3 <- bp3[, 1]
 
+bpid3 <- as.data.frame(bpid3)
 
+bpid3 <- bpid3 %>% rename(FAMNUM=bpid3)
+
+datapp5 <- merge(datapp2, bpid3, by = "FAMNUM", all = F)
 
 
+saveRDS(datapp5, "datapp5.rds")  
+
+m5 <- glmer(formula = birth ~ treated*experiment + factor(age) 
+            + (1|OID) + factor(year) + factor(j) + factor(married), 
+            data = datapp5)
+stargazer(m5)
+
+
+m6 <- lmer(formula = birth ~ plan_1*experiment + plan_2*experiment 
+           + plan_3*experiment + plan_4*experiment + plan_5*experiment 
+           + plan_7*experiment + plan_8*experiment + factor(age) 
+           + (1|OID) + factor(year) + factor(j) + factor(married), 
+           data = datapp5)
+
+stargazer(m6)
+
+
+stargazer(m1, m2, m3, m4, m5, m6)

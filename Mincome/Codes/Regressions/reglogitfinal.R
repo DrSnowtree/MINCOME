@@ -5,7 +5,7 @@ library("mfx")
 library(jtools)
 library(dplyr)
 library(stargazer)
-
+library(foreign)
 
 
 #adding controls 
@@ -71,6 +71,7 @@ reg6 <- glm(formula = formula6,
 
 stargazer(reg5, apply.coef = exp)
 
+
 stargazer(reg1, reg2, reg3, reg4, reg5, reg6)
 stargazer(reg3, reg5)
 
@@ -95,10 +96,9 @@ install.packages("texreg")
 library(texreg)
 stargazer(reg1, reg2, reg3, reg4, reg5, reg6)
 
-mef1 <- logitmfx(formula = formula1, data = basepay, atmean = FALSE, robust = FALSE, clustervar1 = NULL, 
-         clustervar2 = NULL, start = NULL, control = list())
-
-mef2 <- logitmfx(formula = formula2, data = basepay, atmean = FALSE, robust = FALSE, clustervar1 = NULL, 
+mef1 <- logitmfx(reg1, data = basepay, atmean = FALSE, robust = FALSE, clustervar1 = NULL, 
+                 clustervar2 = NULL, start = NULL, control = list())
+mef2 <- logitmfx(reg2, data = basepay, atmean = FALSE, robust = FALSE, clustervar1 = NULL, 
                  clustervar2 = NULL, start = NULL, control = list())
 mef3 <- logitmfx(formula = formula3, data = basepay, atmean = FALSE, robust = FALSE, clustervar1 = NULL, 
                  clustervar2 = NULL, start = NULL, control = list())
@@ -110,7 +110,10 @@ mef6 <- logitmfx(formula = formula6, data = basepay, atmean = FALSE, robust = FA
                  clustervar2 = NULL, start = NULL, control = list())
 
 
-texreg(list(mef1, mef2, mef3, mef4, mef5, mef6), stars = 0.1)
+texreg(list(mef1, mef2))
 stargazer(reg3)
 
 stargazer(reg1, reg2, reg3, reg4, reg5, reg6, apply.coef=exp, t.auto=F, p.auto=F, report = "vc*s")
+
+
+write.dta(basepay, "basepay.dta")
